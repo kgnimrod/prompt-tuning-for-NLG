@@ -1,3 +1,4 @@
 [submodule "lib/transformers"]
 	path = lib/transformers
-	url = https://github.com/huggingface/transformers
+	url = https://github.com/huggingface/transformers.git
+
