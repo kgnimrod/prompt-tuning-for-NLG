@@ -7,7 +7,7 @@
   - _Text-to-text Pre-Training for Data-to-Text Tasks_ (https://arxiv.org/abs/2005.10433)
   - _PTR: Promp Tuning with Rules for Text Classification_ (https://arxiv.org/abs/2105.11259)
 
-## 24.11.2021 & 26.11.2021:
+## 14.11.2021 & 17.11.2021:
 - Added the huggingface transformers module as submodule to our repository
 - Created a directory `playground` to do testing and experimenting with the API 
 - Created a jupyter notebook file `huggin_face_first_steps.ipynb` to go through different examples on how to use the pre-trained pipelines that are provided per NLP task
