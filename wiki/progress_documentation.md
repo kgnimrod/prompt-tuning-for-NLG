@@ -30,3 +30,5 @@ print(tokenizer.decode(outputs[0], skip_special_tokens=True))
 
 >>> "Der Tisch ist wunderbar."
 ```
+
+- See [T5 Documentation](t5_documentation.md) for more information on how T5 works, details of the model, which downstream tasks were considered and on which dataset it was trained on

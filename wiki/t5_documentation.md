@@ -9,4 +9,4 @@
     - Fine-Tuning: 262.144 steps on all task.
     - Denoising objective or Masked Language Modeling used to predict missing or otherwise corrupted tokens in the input.
     - "Word dropout" regularization technique: randomly sample and drop out X percent of tokens in the input sequence.  
-    - <img src="https://github.com/caesarea38/prompt-tuning-for-NLG/blob/main/wiki/images/objective_schema_t5.png" width="900" height="400"/>
+    - ![Objective Schema for T5](images/objective_schema_t5.png)
