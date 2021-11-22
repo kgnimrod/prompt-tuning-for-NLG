@@ -33,6 +33,25 @@ input_ids = tokenizer('translate English to German: The table is wonderful.', re
 # compute outputs and print the resulting translation
 outputs = model.generate(input_ids)
 print(tokenizer.decode(outputs[0], skip_special_tokens=True))
-
->>> "Der Tisch ist wunderbar."
 ```
+Output:
+> "Der Tisch ist wunderbar."
+
+## 22. 11. 2021
+- Clarification project resources usage
+- remark: metrics and benchmarks:
+  - we can use same once as mentioned in the different papers > we decide which onces we want to use
+- question: what is benefit of self-attention over other techniques
+- question: masking vs. fully visible input into the encoder
+- remark: first delivery: 
+  - what is our project goal
+  - what is our motivation
+  - what is the techniques and tools we'd like to use
+  - what is our plan / roadmap
+  - from the point of a report that would cover the sections: goal, motivation, state-of-art
+- remark: documentation:
+  - we could also add section for shared slides set
+  - transition from just reading and understanding to what we actually want to incorporate into project
+    - already add parts we want to use into those slides
+    - refine the parts, e.g. add graphics, combine different resources
+  - with this we can work on a draft for first presentation continuously
