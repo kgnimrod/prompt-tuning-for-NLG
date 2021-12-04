@@ -2,3 +2,6 @@
 	path = lib/transformers
 	url = https://github.com/huggingface/transformers.git
 
+[submodule "lib/datasets"]
+	path = lib/datasets
+	url = https://github.com/huggingface/datasets.git

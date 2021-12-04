@@ -37,6 +37,7 @@ print(tokenizer.decode(outputs[0], skip_special_tokens=True))
 Output:
 > "Der Tisch ist wunderbar."
 
+
 ## 22. 11. 2021
 - Clarification project resources usage
 - remark: metrics and benchmarks:
