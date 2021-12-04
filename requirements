@@ -16,4 +16,4 @@ attrs>=21.2.0
 setuptools>=58.0.4
 joblib>=1.1.0
 sentencepiece
-datasets
+datasets>= 1.15.1
