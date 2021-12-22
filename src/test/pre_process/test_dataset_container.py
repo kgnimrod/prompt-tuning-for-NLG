@@ -1,6 +1,6 @@
 import unittest
 from datasets import load_dataset
-from src.pre_processing.preprocess import DatasetContainer
+from src.pre_process.preprocess import DatasetContainer
 
 
 class DatasetContainerTestCase(unittest.TestCase):

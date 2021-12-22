@@ -1,9 +1,9 @@
 from datasets import load_dataset
 
 
-def pre_process_web_nlg(path: str, name: str = None):
+def pre_process_dataset(path: str, name: str = None, split_names=("train", "validation", "test")):
     dataset_union = load_dataset(path, name)
-    container = DatasetContainer(dataset_union, ["train", "dev", "test"])
+    container = DatasetContainer(dataset_union, split_names)
     return container
 
 
@@ -26,7 +26,7 @@ class DatasetContainer:
             self.test_data = None
 
     def get_train_data(self):
-        return self.train_data
+        return self.train_data.data
 
     def get_validation_data(self):
         return self.validation_data
