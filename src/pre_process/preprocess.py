@@ -1,4 +1,8 @@
-from datasets import load_dataset
+from datasets import load_dataset, Dataset
+
+
+def serialize_dataset(dataset: Dataset):
+    return dataset.flatten()
 
 
 def pre_process_dataset(path: str, name: str = None, split_names=("train", "validation", "test")):
