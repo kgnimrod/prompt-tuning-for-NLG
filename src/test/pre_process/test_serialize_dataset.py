@@ -12,6 +12,7 @@ class SerializeDatasetTestCase(unittest.TestCase):
             with self.subTest(i=parameter):
                 expected = parameter().flatten()
                 actual = serialize_dataset(parameter())
+                print(actual)
                 self.assertEquals(actual["lex.text"], expected["lex.text"])
 
     def test_serialize_inputs(self):

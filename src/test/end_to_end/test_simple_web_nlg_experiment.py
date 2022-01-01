@@ -9,7 +9,7 @@ from src.pre_process.preprocess import pre_process_dataset, serialize_dataset
 
 
 class SimpleWebNlgExperimentTestCase(unittest.TestCase):
-    def test_something(self):
+    def test_web_nlg_base(self):
 
         config = load_config_from_yaml(join(".", "config", "web_nlg.yml"))
         container = pre_process_dataset(
