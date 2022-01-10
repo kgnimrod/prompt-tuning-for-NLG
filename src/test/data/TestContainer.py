@@ -7,12 +7,4 @@ class TestDatasetWebNlg:
     def __init__(self):
         self.path_to_config = join(".", "src", "test", "data", "test_config.yml")
         self.config = load_config_from_yaml(self.path_to_config)
-        self.container = pre_process_dataset(
-            self.config["DATASET_PATH"],
-            self.config["DATASET_NAME"],
-            (
-                self.config["NAME_TRAIN_DATASET"],
-                self.config["NAME_VALIDATION_DATASET"],
-                self.config["NAME_TEST_DATASET"]
-            )
-        )
+        self.container = pre_process_dataset(self.config)
