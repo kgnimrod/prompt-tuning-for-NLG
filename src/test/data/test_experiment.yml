@@ -1,5 +1,8 @@
 DATASET_CONFIG: config/web_nlg.yml
-GPUS: 0
+# available GPU ids
+GPUS:
+  - 0
+#  - 1
 
-PRE_TRAINED_MODEL: t5-base
+PRE_TRAINED_MODEL: t5-small
 
