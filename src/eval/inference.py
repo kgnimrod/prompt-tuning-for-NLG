@@ -4,19 +4,18 @@ import torch
 
 
 def make_predictions(model, encoding, tokenizer):
-
     model_predictions = []
     model.eval()
     with torch.no_grad():
         for i in range(len(encoding)):
             print('make_predictions: encoding: ', i)
             input_ids = encoding[i].input_ids
-            attention_mask = encoding[i].attention_mask
+            # attention_mask = encoding[i].attention_mask
             output = tokenizer.batch_decode(
                 model.generate(
                     input_ids=input_ids,
                     do_sample=True,
-                    max_length=400,
+                    # max_length=400,
                     top_p=0.92,
                     top_k=0,
                     decoder_input_ids=input_ids
