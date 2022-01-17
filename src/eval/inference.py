@@ -15,7 +15,7 @@ def make_predictions(model, encoding, tokenizer):
                 model.generate(
                     input_ids=input_ids,
                     do_sample=True,
-                    # max_length=400,
+                    max_length=400,
                     top_p=0.92,
                     top_k=0,
                     decoder_input_ids=input_ids

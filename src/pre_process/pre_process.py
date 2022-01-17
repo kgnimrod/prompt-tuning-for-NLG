@@ -13,9 +13,9 @@ def create_list_of_batches(batch_size, num_batches, data, tokenizer, device):
             label_batch.append(row['target_text'])
 
         input_batch = tokenizer.batch_encode_plus(
-            input_batch, max_length=3000, padding='max_length', return_tensors='pt')
+            input_batch, padding=True, return_tensors='pt')
         label_batch = tokenizer.batch_encode_plus(
-            label_batch, max_length=3000, padding='max_length', return_tensors='pt')
+            label_batch, padding=True, return_tensors='pt')
 
         input_batch = input_batch.to(device)
         label_batch = label_batch.to(device)
