@@ -39,7 +39,8 @@ def trainer(model, num_batches, inputs, labels, optimizer, challenge_name, model
         optimizer.zero_grad()
 
         # Forward propogation
-        outputs = model(input_ids=inputs[i], labels=labels[i])
+        outputs = model(inputs_embeds=model.append_learned_embedding_to_input(inputs[i]['input_ids']), labels=model.extend_labels(labels[i]['input_ids']), attention_mask= model.extend_attention_mask(inputs[i]['attention_mask']))
+
         loss = outputs.loss
         loss_num=loss.item()
         logits = outputs.logits
@@ -101,9 +102,9 @@ def create_list_of_batches(batch_size, num_batches, data, tokenizer):
           input_batch.append('translate from Graph to Text: '+row['input_text'])
           label_batch.append(row['target_text'])
 
-        input_batch=tokenizer.batch_encode_plus(input_batch,padding=True, max_length=400, return_tensors='pt', return_attention_mask=True)
+        input_batch=tokenizer.batch_encode_plus(input_batch,padding=True, return_tensors='pt', return_attention_mask=True)
         #print('input_batch shape: ' + str(input_batch.shape))
-        label_batch=tokenizer.batch_encode_plus(label_batch,padding=True, max_length=400, return_tensors='pt', return_attention_mask=True)
+        label_batch=tokenizer.batch_encode_plus(label_batch,padding=True,  return_tensors='pt', return_attention_mask=True)
         #print('label_batch shape: ' + str(label_batch.shape))
 
         input_batch=input_batch.to(dev)
@@ -145,14 +146,13 @@ class T5PromptTuning(T5ForConditionalGeneration):
         self.number_tokens = self.soft_prompt.num_embeddings
         print(f"Set soft prompt. (number_tokens: {self.number_tokens})")
 
-    def initialize_soft_prompt(self, number_tokens: int = 20, initialize_from_vocab: bool = True,
-                               random_range: float = 0.5):
+    def initialize_soft_prompt(self, number_tokens: int = 20, initialize_from_vocab: bool = True, random_range: float = 0.5):
         self.number_tokens = number_tokens
+        self.evaluation = False
         if initialize_from_vocab:
             init_prompt_value = self.shared.weight[:number_tokens].clone().detach()
         else:
-            init_prompt_value = torch.FloatTensor(number_tokens, self.config.d_model).uniform_(-random_range,
-                                                                                               random_range)
+            init_prompt_value = torch.FloatTensor(number_tokens, self.config.d_model).uniform_(-random_range,random_range)
         # self.soft_prompt = torch.nn.Embedding(number_tokens, self.config.d_model)
 
         print(init_prompt_value.shape)
@@ -216,38 +216,89 @@ class T5PromptTuning(T5ForConditionalGeneration):
         # kwargs['input_ids'] = kwargs['input_ids'].to(self.device)
         return super().generate(*args, **kwargs)
 
-    def prepare_inputs_for_generation(self, input_ids, past=None, *args, **kwargs):
-        input_ids = input_ids.to(self.device)
-        return super().prepare_inputs_for_generation(input_ids, None, *args, **kwargs)
+  #  def prepare_inputs_for_generation(self, input_ids, past=None, *args, **kwargs):
+  #      input_ids = input_ids.to(self.device)
+  #      return super().prepare_inputs_for_generation(input_ids, None, *args, **kwargs)
 
     def forward(
-            self, input_ids=None, past_key_values=None, attention_mask=None, token_type_ids=None,
-            position_ids=None, head_mask=None, inputs_embeds=None, encoder_hidden_states=None,
-            encoder_attention_mask=None, labels=None, use_cache=None, output_attentions=None,
-            output_hidden_states=None, return_dict=None, decoder_input_ids=None, encoder_outputs=None,
-            decoder_head_mask=None, cross_attn_head_mask=None):
+            self,
+            input_ids=None,
+            attention_mask=None,
+            decoder_input_ids=None,
+            decoder_attention_mask=None,
+            head_mask=None,
+            decoder_head_mask=None,
+            cross_attn_head_mask=None,
+            encoder_outputs=None,
+            past_key_values=None,
+            inputs_embeds=None,
+            decoder_inputs_embeds=None,
+            labels=None,
+            use_cache=None,
+            output_attentions=None,
+            output_hidden_states=None,
+            return_dict=None):
 
-        # print(input_ids)
-        if input_ids is not None:
-            inputs_embeds = self.append_learned_embedding_to_input(input_ids)
-            print("1")
+        return super().forward(
+            # input_ids=input_ids,
+            attention_mask=attention_mask,
+            decoder_input_ids=decoder_input_ids,
+            decoder_attention_mask=decoder_attention_mask,
+            head_mask=head_mask,
+            decoder_head_mask=decoder_head_mask,
+            cross_attn_head_mask=cross_attn_head_mask,
+            encoder_outputs=encoder_outputs,
+            past_key_values=past_key_values,
+            inputs_embeds=inputs_embeds,
+            decoder_inputs_embeds=decoder_inputs_embeds,
+            labels=labels,
+            use_cache=use_cache,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict)
 
-        if labels is not None:
+        """if labels is not None:
             labels = self.extend_labels(labels)
             print("2")
 
         if attention_mask is not None:
             attention_mask = self.extend_attention_mask(attention_mask)
-            # print("3")
+            print("3")
+
+        #print(input_ids) --> None during evaluation
+        #print(attention_mask)
+        #print(decoder_input_ids)
+        #print(decoder_attention_mask) --> None during evaluation
+        #print(head_mask) --> None during evaluation
+        #print(decoder_head_mask) --> None during evaluation
+        #print(cross_attn_head_mask) --> None during evaluation
+        #print(encoder_outputs.shape)
+        #print(past_key_values)
+        #print(inputs_embeds) --> None during evaluation
+        #print(decoder_inputs_embeds) --> None during evaluation --> set these to input embeds after calling append... ?
+        #print(labels) --> None during evaluation
+        #print(use_cache) #--> set to true
+        #print(output_attentions) #--> is set to false 
+        #print(output_hidden_states) #--> is set to false
+        #print(return_dict) #--> is set to true
 
         return super().forward(
-            # input_ids=input_ids,
-            attention_mask=attention_mask,
-            inputs_embeds=inputs_embeds,
-            labels=labels,
-            use_cache=use_cache,
-            return_dict=return_dict
-        )
+                #input_ids=input_ids,
+                attention_mask=attention_mask,
+                #decoder_input_ids=decoder_input_ids,
+                #decoder_attention_mask=decoder_attention_mask,
+                #head_mask=head_mask,
+                #decoder_head_mask=decoder_head_mask,
+                #cross_attn_head_mask=cross_attn_head_mask,
+                #encoder_outputs=encoder_outputs,
+                #past_key_values=past_key_values,
+                inputs_embeds=inputs_embeds,
+                #decoder_inputs_embeds=decoder_inputs_embeds,
+                labels=labels,
+                use_cache=use_cache,
+                #output_attentions=output_attentions,
+                #output_hidden_states=output_hidden_states,
+                return_dict=return_dict)"""
 
 epochs = 10
 
@@ -278,6 +329,7 @@ tokenizer_t5_small = T5Tokenizer.from_pretrained('t5-small')
 
 # Instantiate one T5 small model that should be trained on all the 3 datasets
 model_t5_small = T5PromptTuning.from_pretrained('t5-small', number_tokens=number_prompt_tokens, initialize_from_vocab=init_from_vocab)
+#model_t5_small = T5ForConditionalGeneration.from_pretrained('t5-small')
 
 #moving the models to device(GPU/CPU)
 model_t5_small.to(dev)
@@ -305,33 +357,41 @@ labels_test_amr = create_list_of_batches(batch_size=batch_size_amr,
                                               data=test_data_amr,
                                               tokenizer=tokenizer_t5_small)
 
-optimizer_t5 = optimizer_adafactor(model_t5_small)
+#optimizer_t5 = optimizer_adafactor(model_t5_small)
 
+# use this method to generate text for each test input ids, then save the predictions
+# in a file 'hypothesis' for web nlg and amr to later use the official evaluation script for the
+# challenges
 def make_predictions(model, inputs_test, tokenizer, challenge_name):
 
   model_predictions = []
   model.eval()
   with torch.no_grad():
     for i in range(len(inputs_test)):
-      print(i)
+      embeds = model.append_learned_embedding_to_input(inputs_test[i]['input_ids'])
       output = tokenizer.batch_decode(model.generate(#input_ids=inputs_test[i]['input_ids'],
-                                                     do_sample=True,
+                                                     inputs_embeds=embeds,
+                                                     #do_sample=True,
                                                      max_length=400,
-                                                     top_p=0.92,
-                                                     top_k=0,
+                                                     #top_p=0.92,
+                                                     #top_k=0,
                                                      bos_token_id=0,
                                                      pad_token_id=0,
                                                      eos_token_id=1,
-                                                     inputs_embeds=model.append_learned_embedding_to_input(inputs_test[i]['input_ids']),
-                                                     attention_mask=model.extend_attention_mask(inputs_test[i]['attention_mask'])
+                                                     use_cache=True,
+                                                     attention_mask=model.extend_attention_mask(inputs_test[i]['attention_mask']),
+                                                     decoder_input_ids=inputs_test[i]['input_ids']
+                                                     #decoder_input_embeds=embeds
                                                      ),
-                                        skip_special_tokens=True)
-
+                                      skip_special_tokens=True,
+                                      )
+      print(output)
       model_predictions.append([x.replace('<pad>','').replace('</s>','').strip() for x in output])
 
     # flatten the predictions list which has the length of batch_size * number_of_batches
     model_predictions = list(chain(*model_predictions))
   model.train()
+  local=True
   with open('drive/MyDrive/MIwDL/data/' + challenge_name + '/test/prompt_tuning_hypothesis/hypothesis', 'w') as file:
     for i in range(len(model_predictions)):
       file.write(model_predictions[i] + '\n' if i < len(model_predictions)-1 else model_predictions[i])
