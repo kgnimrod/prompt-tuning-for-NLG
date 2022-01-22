@@ -5,9 +5,9 @@ import torch
 import pandas as pd
 from transformers import T5Tokenizer
 
-from src.core.t5_promt_tuning import T5PromptTuning
-from src.eval.inference import make_predictions
-from src.pre_process.pre_process import create_list_of_batches
+from src.t5_promt_tuning import T5PromptTuning
+from src.inference import make_predictions
+from src.pre_process import create_list_of_batches
 
 
 class MyTestCase(unittest.TestCase):

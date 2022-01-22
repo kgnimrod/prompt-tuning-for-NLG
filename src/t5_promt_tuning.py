@@ -145,11 +145,6 @@ class T5PromptTuning(T5ForConditionalGeneration):
         if attention_mask is not None:
             attention_mask = self.extend_attention_mask(attention_mask).to(self.device)
 
-        print('T5 Prompt Tuning.forward(), shape attention mask :' + str(attention_mask.shape))
-        print('T5 Prompt Tuning.forward(), shape inputs_embeds  :' + str(inputs_embeds.shape))
-        print('T5 Prompt Tuning.forward(), shape decoder_inputs_embeds  :' + str(decoder_inputs_embeds.shape))
-        print('T5 Prompt Tuning.forward(), shape labels  :' + str(labels.shape))
-
         return super().forward(
             input_ids=None,
             attention_mask=attention_mask,

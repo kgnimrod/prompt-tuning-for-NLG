@@ -10,7 +10,7 @@ def make_predictions(model, encoding, tokenizer):
         for i in range(len(encoding)):
             print('make_predictions: encoding: ', i)
             input_ids = encoding[i].input_ids
-            # attention_mask = encoding[i].attention_mask
+            attention_mask = encoding[i].attention_mask
             output = tokenizer.batch_decode(
                 model.generate(
                     input_ids=input_ids,
@@ -18,7 +18,8 @@ def make_predictions(model, encoding, tokenizer):
                     max_length=400,
                     top_p=0.92,
                     top_k=0,
-                    decoder_input_ids=input_ids
+                    decoder_input_ids=input_ids,
+                    attention_mask=attention_mask
                 ),
                 skip_special_tokens=True)
             model_predictions.append([x.replace('<pad>', '').replace('</s>', '').strip() for x in output])
