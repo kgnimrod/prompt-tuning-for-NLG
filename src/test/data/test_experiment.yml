@@ -1,0 +1,9 @@
+DATASET_CONFIG: config/web_nlg.yml
+# available GPU ids
+GPUS:
+  - 0
+#  - 1
+
+PRE_TRAINED_MODEL: t5-small
+
+OUTPUT_DIR: test-webnlg-t5-base

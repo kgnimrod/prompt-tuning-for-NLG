@@ -1,0 +1,10 @@
+DATASET_PATH: e2e_nlg
+DATASET_NAME:
+
+NAME_TRAIN_DATASET: train
+NAME_VALIDATION_DATASET: validation
+NAME_TEST_DATASET: test
+
+FLATTEN: False
+INPUT_IDS: meaning_representation
+LABELS: human_reference

@@ -12,6 +12,11 @@ To call the test runner and run all test cases run the following code snippet in
 python ./src/test/test_runner.py
 ```
 
+To run a specific test use module "unittest" and the -v parameter with the name of the test file :
+```
+python -m unittest -v src/test/end_to_end/test_simple_soft_prompts_inference.py
+```
+
 Next things to integrate:
 * reading arguments from command line 
   * (I already have code snippets for it in another branch > will integrate it later)

@@ -1,0 +1,10 @@
+DATASET_PATH: web_nlg
+DATASET_NAME: release_v3.0_en
+
+NAME_TRAIN_DATASET: train
+NAME_VALIDATION_DATASET: dev
+NAME_TEST_DATASET: test
+
+FLATTEN: True
+INPUT_IDS: original_triple_sets.otriple_set
+LABELS: lex.text
