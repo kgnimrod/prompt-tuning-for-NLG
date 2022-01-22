@@ -321,7 +321,7 @@ if __name__ == '__main__':
 
     logging.info('READING INPUTS...')
     refs_path = '../../data/amr/test/reference'
-    hyps_path = '../../data/amr/test/hypothesis'
+    hyps_path = '../../data/amr/test/prompt_tuning_hypothesis/hypothesis'
     lng = args.language
     num_refs = args.num_refs
     metrics = args.metrics#.lower().split(',')
