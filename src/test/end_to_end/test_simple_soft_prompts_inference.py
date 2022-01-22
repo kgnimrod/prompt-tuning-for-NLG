@@ -10,8 +10,8 @@ from src.inference import make_predictions
 from src.pre_process import create_list_of_batches
 
 
-class MyTestCase(unittest.TestCase):
-    def test_something(self):
+class SimpleSoftPromptInferenceTest(unittest.TestCase):
+    def test_infere_on_amr(self):
         load_no_duplicate_sets = True
 
         # Load the datasets for the Abstract Meaning Representation AMR challenge

@@ -6,3 +6,4 @@ GPUS:
 
 PRE_TRAINED_MODEL: t5-small
 
+OUTPUT_DIR: test-webnlg-t5-base
