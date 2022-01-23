@@ -320,8 +320,8 @@ if __name__ == '__main__':
     args = argParser.parse_args()
 
     logging.info('READING INPUTS...')
-    refs_path = '../../data/amr/test/reference'
-    hyps_path = '../../data/amr/test/prompt_tuning_hypothesis/hypothesis'
+    refs_path = '../../data/web_nlg/test/reference'
+    hyps_path = '../../data/web_nlg/test/prompt_tuning_hypothesis/hypothesis'
     lng = args.language
     num_refs = args.num_refs
     metrics = args.metrics#.lower().split(',')
