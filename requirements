@@ -17,9 +17,9 @@ joblib>=1.1.0
 sentencepiece>=0.1.95
 datasets>= 1.15.1
 sacrebleu>=2.0.0
-typing>=3.10.0.0
+typing
 pyarrow>=6.0.1
-yaml>=0.2.5
+pyyaml
 dill>=0.3.4
 typing_extensions>=3.10.0.2
 fsspec>=2021.11.1

@@ -5,6 +5,9 @@ NAME_TRAIN_DATASET: train
 NAME_VALIDATION_DATASET: dev
 NAME_TEST_DATASET: test
 
+PRE_PROCESS: huggingface
+PRE_PROCESS_METHOD:
+
 FLATTEN: True
 INPUT_IDS: original_triple_sets.otriple_set
 LABELS: lex.text

@@ -1,6 +1,6 @@
-DATASET_CONFIG: config/web_nlg.yml
+DATASET_CONFIG: config/amr_nlg.yml
 
-PRE_TRAINED_MODEL: t5-base
+PRE_TRAINED_MODEL: t5-small
 LOAD_MODEL: False
 PROMPT_TUNING: True
 
@@ -25,11 +25,11 @@ METRIC_FOR_BEST_MODEL: loss
 NUM_TRAIN_EPOCHS: 4
 PREDICTION_LOSS_ONLY: True
 REMOVE_UNUSED_COLUMNS: True
-SAVE_STEPS: 1ßßß
+SAVE_STEPS: 1000
 SAVE_TOTAL_LIMIT: 1
-WANDB_RUN_NAME: web_nlg_t5_base
+WANDB_RUN_NAME: amr_nlg_t5_small
 
-OUTPUT_DIR: web_nlg_t5_base
+OUTPUT_DIR: amr_nlg_t5_small
 INPUT_DIR: run/amr_nlg_t5_small/models
 
 SAVE_MODEL: True
