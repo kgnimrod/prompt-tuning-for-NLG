@@ -1,12 +1,12 @@
-DATASET_PATH: e2e_nlg
-DATASET_NAME:
+DATASET_PATH: data/amr
+DATASET_NAME: amr-bank-struct-v3.0.txt
 
 NAME_TRAIN_DATASET: train
 NAME_VALIDATION_DATASET: validation
 NAME_TEST_DATASET: test
 
-PRE_PROCESS: huggingface
-PRE_PROCESS_METHOD:
+PRE_PROCESS: custom
+PRE_PROCESS_METHOD: pre_process_amr_dataset
 
 FLATTEN: False
 INPUT_IDS: meaning_representation

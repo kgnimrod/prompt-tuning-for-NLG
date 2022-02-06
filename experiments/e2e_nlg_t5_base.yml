@@ -1,4 +1,4 @@
-DATASET_CONFIG: config/web_nlg.yml
+DATASET_CONFIG: config/e2e_nlg.yml
 
 PRE_TRAINED_MODEL: t5-base
 LOAD_MODEL: False
@@ -27,9 +27,9 @@ PREDICTION_LOSS_ONLY: True
 REMOVE_UNUSED_COLUMNS: True
 SAVE_STEPS: 1ßßß
 SAVE_TOTAL_LIMIT: 1
-WANDB_RUN_NAME: web_nlg_t5_base
+WANDB_RUN_NAME: e2e_nlg_t5_base
 
-OUTPUT_DIR: web_nlg_t5_base
+OUTPUT_DIR: e2e_nlg_t5_base
 INPUT_DIR: run/amr_nlg_t5_small/models
 
 SAVE_MODEL: True

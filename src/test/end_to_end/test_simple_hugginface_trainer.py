@@ -2,10 +2,10 @@ import unittest
 from os.path import join
 
 import torch
-from src.pre_process import pre_process_huggingface_dataset
+from src.core.pre_process import pre_process_huggingface_dataset
 from transformers import T5ForConditionalGeneration, T5Tokenizer, TrainingArguments, IntervalStrategy, Trainer
 
-from src.utils.config import load_config_from_yaml
+from src.core.config import load_config_from_yaml
 
 
 class SimpleHuggingfaceTrainerTest(unittest.TestCase):
