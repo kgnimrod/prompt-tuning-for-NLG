@@ -53,11 +53,13 @@ def train_with_torch(args, model, datasets):
             elif i % 100 == 0:
                 print('Steps: {} , Running loss: {}'.format(i, running_loss))
 
+            if args["save_model"] and i % args['logging_steps'] == 0:
+                save_model(model, join(args["output_dir"], "logs"))
+
+
         running_loss = running_loss / int(num_batches)
         print('Epoch: {} , Running loss: {}'.format(epoch, running_loss))
 
-        if args["save_model"]:
-            save_model(model, join(args["output_dir"], "logs"))
     return model
 
 

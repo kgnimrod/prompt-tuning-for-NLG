@@ -1,5 +1,6 @@
 from datetime import datetime
-from os.path import join
+from os import mkdir
+from os.path import join, exists
 
 import torch
 from transformers import T5Tokenizer, T5ForConditionalGeneration
@@ -30,7 +31,8 @@ class Experiment:
         self.model = None
         self.predictions = None
         self.inputs = {}
-        self.starting_timestamp = datetime.now()
+        self.starting_timestamp = datetime.timestamp()
+
 
         self.training_args = {
             'batch_size': self.config["BATCH_SIZE"],
