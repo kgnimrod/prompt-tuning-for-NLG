@@ -3,19 +3,19 @@ from os.path import join, exists
 import torch
 
 
-def save_soft_prompt(soft_prompt, path, challenge_name, epochs, model_size, number_tokens):
-    file = join("soft_prompt_", challenge_name, "_", model_size, "_", epochs, "_epochs_", number_tokens, ".model")
-    path = join(path, "soft_prompts", file)
-    save_model(soft_prompt, path)
+def save_soft_prompt(soft_prompt, path, epochs, model_size, number_tokens):
+    file = "soft_prompt_" + model_size + "_" + str(epochs) + "_epochs_" + str(number_tokens) + ".model"
+    path = join(path, "soft_prompts")
+    save_model(soft_prompt, path, file)
 
 
-def save_model(model, path, filename="model"):
-    path = validate_path(path, filename)
-    path = join(path, filename + ".model")
+def save_model(model, path, filename="model.model"):
+    path = validate_path(path)
+    path = join(path, filename)
     torch.save(model, path)
 
 
-def validate_path(path, filename="model"):
+def validate_path(path):
     if not exists(path):
         mkdir(path)
     return path
@@ -46,7 +46,8 @@ def load_checkpoint(model, optimizer, path):
 
 
 def save_state_dict(model, path, filename="model_state_dict"):
-    path = validate_path(path, filename)
+    path = validate_path(path)
+    path = join(path, filename + ".model")
     torch.save(model.state_dict(), path)
 
 
