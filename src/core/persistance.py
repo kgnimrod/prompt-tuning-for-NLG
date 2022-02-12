@@ -9,15 +9,15 @@ def save_soft_prompt(soft_prompt, path, challenge_name, epochs, model_size, numb
     save_model(soft_prompt, path)
 
 
-def save_model(model, path):
-    path = validate_path(path)
+def save_model(model, path, filename="model"):
+    path = validate_path(path, filename)
+    path = join(path, filename + ".model")
     torch.save(model, path)
 
 
 def validate_path(path, filename="model"):
     if not exists(path):
         mkdir(path)
-        path = join(path, filename + ".model")
     return path
 
 
@@ -25,8 +25,9 @@ def load_model(path):
     return torch.load(path)
 
 
-def save_checkpoint(epoch, model, optimizer, loss, path):
+def save_checkpoint(epoch, model, optimizer, loss, path, filename="model"):
     path = validate_path(path)
+    path = join(path, filename + ".model")
     torch.save({
         'epoch': epoch,
         'model_state_dict': model.state_dict(),
@@ -44,8 +45,8 @@ def load_checkpoint(model, optimizer, path):
     return epoch, model, optimizer, loss
 
 
-def save_state_dict(model, path):
-    path = validate_path(path, "model_state_dict")
+def save_state_dict(model, path, filename="model_state_dict"):
+    path = validate_path(path, filename)
     torch.save(model.state_dict(), path)
 
 

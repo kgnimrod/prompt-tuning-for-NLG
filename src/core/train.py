@@ -3,7 +3,7 @@ from IPython.display import HTML, display
 
 from transformers import TrainingArguments, Trainer, IntervalStrategy, Adafactor
 
-from src.core.persistance import save_model
+from src.core.persistance import save_model, validate_path
 
 
 def train(args, model, datasets, mode="torch"):
@@ -53,8 +53,10 @@ def train_with_torch(args, model, datasets):
             elif i % 100 == 0:
                 print('Steps: {} , Running loss: {}'.format(i, running_loss))
 
-            if args["save_model"] and i % args['logging_steps'] == 0:
-                save_model(model, join(args["output_dir"], "logs"))
+            # if args["save_model"] and i % args['logging_steps'] == 0:
+            #     validate_path(args["output_dir"])
+            #     validate_path(join(args["output_dir"], "logs"))
+            #     save_model(model, join(args["output_dir"], "logs"))
 
 
         running_loss = running_loss / int(num_batches)

@@ -1,8 +1,14 @@
-DATASET_CONFIG: config/amr_nlg.yml
+DATASETS:
+  -
+    KEY: amr_nlg
+    DATASET_CONFIG: config/amr_nlg.yml
 
 PRE_TRAINED_MODEL: t5-small
 LOAD_MODEL: False
 PROMPT_TUNING: True
+
+SAMPLE: False
+SAMPLE_SIZE:
 
 NUMBER_PROMPT_TOKENS: 50
 RANDOM_RANGE: 0.5
