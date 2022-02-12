@@ -2,7 +2,6 @@ from os.path import join
 # from IPython.display import HTML, display
 import pandas as pd
 from transformers import TrainingArguments, Trainer, IntervalStrategy, Adafactor
-
 from src.core.persistance import validate_path
 
 
