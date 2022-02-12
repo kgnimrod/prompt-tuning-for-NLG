@@ -10,7 +10,6 @@ class T5PromptTuning(T5ForConditionalGeneration):
         self.config = config
         self.model_dim = config.d_model
         self.shared = torch.nn.Embedding(config.vocab_size, config.d_model)
-        self.device = None
 
     @classmethod
     def from_pretrained(cls, model_name_or_path: str, soft_prompt_path: str = None, number_tokens: int = None,
