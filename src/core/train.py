@@ -28,12 +28,10 @@ def train_with_torch(args, model, datasets):
 
             # clear out the gradients of all Variables
             optimizer.zero_grad()
-            inputs_embeds = model.embed_tokens(datasets['train']['input_ids'][i])
-            attention_mask = model.extend_attention_mask(datasets['train']['attention_mask'][i])
-            labels = model.extend_labels(datasets['train']['labels'][i])
-
-            # Forward propagation
-            outputs = model(inputs_embeds=inputs_embeds, labels=labels, attention_mask=attention_mask)
+            if args['train_with_embeddings']:
+                outputs = _train_with_embeddings(datasets, i, model)
+            else:
+                outputs = _train_with_inputs(datasets, i, model)
 
             loss = outputs.loss
             loss_num = loss.item()
@@ -57,6 +55,24 @@ def train_with_torch(args, model, datasets):
         _log(args["output_dir"], "epoch_average_loss_" + args['starting_timestamp'] + ".csv", epoch, running_loss)
 
     return model
+
+
+def _train_with_embeddings(datasets, i, model):
+    inputs_embeds = model.embed_tokens(datasets['train']['input_ids'][i])
+    attention_mask = model.extend_attention_mask(datasets['train']['attention_mask'][i])
+    labels = model.extend_labels(datasets['train']['labels'][i])
+    # Forward propagation
+    outputs = model(inputs_embeds=inputs_embeds, labels=labels, attention_mask=attention_mask)
+    return outputs
+
+
+def _train_with_inputs(datasets, i, model):
+    inputs = datasets['train']['input_ids'][i]
+    attention_mask = datasets['train']['attention_mask'][i]
+    labels = datasets['train']['labels'][i]
+    # Forward propagation
+    outputs = model(inputs=inputs, labels=labels, attention_mask=attention_mask)
+    return outputs
 
 
 def _log(path, file, index, running_loss):
@@ -85,9 +101,9 @@ def train_with_huggingface(args, model, datasets):
         logging_steps=args["logging_steps"],
         eval_steps=args["eval_steps"],
         logging_first_step=args["logging_first_step"],
-        load_best_model_at_end=args["LOAD_BEST_MODEL_AT_END"],
-        metric_for_best_model=args["METRIC_FOR_BEST_MODEL"],
-        greater_is_better=args["GREATER_IS_BETTER"]
+        load_best_model_at_end=args["load_best_model_at_end"],
+        metric_for_best_model=args["metric_for_best_model"],
+        greater_is_better=args["greater_is_better"]
     )
 
     model.train()

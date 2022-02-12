@@ -59,7 +59,8 @@ class Experiment:
             'save_steps': self.config["SAVE_STEPS"],
             'save_total_limit': self.config["SAVE_TOTAL_LIMIT"],
             'wandb_run_name': self.config["WANDB_RUN_NAME"],
-            'starting_timestamp': str(self.starting_timestamp)
+            'starting_timestamp': str(self.starting_timestamp),
+            'train_with_embeddings': self.config["PROMPT_TUNING"]
         }
 
     def _load_dataset(self, dataset):
@@ -81,7 +82,7 @@ class Experiment:
             self.inputs['test'] = self._prepare_inputs(self.data['test'])
         self._to_device()
         if self.config["TRAIN"]:
-            train(self.training_args, self.model, self.inputs)
+            train(self.training_args, self.model, self.inputs, self.config["TRAIN_MODE"])
 
         if self.config["SAVE_MODEL"]:
             validate_path(self.training_args["output_dir"])
