@@ -155,8 +155,3 @@ def _combine(dataset_target, dataset_source):
         pandas.append(dataset_source.to_pandas())
         dataset_target = Dataset.from_pandas(pandas)
     return dataset_target
-
-
-# @TODO: the following logic is in-performant
-def align_datasets(datasets):
-    pass
