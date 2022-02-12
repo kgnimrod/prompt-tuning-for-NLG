@@ -162,7 +162,6 @@ class Experiment:
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         print(device)
         self.model.to(device)
-        self.model.device = device
         # self.model = torch.nn.DataParallel(model, device_ids=config["GPUS"])
         for item in self.inputs:
             self.inputs[item]["input_ids"].to(device)
