@@ -1,7 +1,9 @@
 from os.path import join
 # from IPython.display import HTML, display
-
+import pandas as pd
 from transformers import TrainingArguments, Trainer, IntervalStrategy, Adafactor
+
+from src.core.persistance import validate_path
 
 
 def train(args, model, datasets, mode="torch"):
@@ -46,20 +48,24 @@ def train_with_torch(args, model, datasets):
 
             if i % 10 == 0:
                 loss_per_10_steps.append(loss_num)
-            # if out is not None:
-            #     out.update(progress(loss_num, i, num_batches + 1))
-            # elif i % 100 == 0:
-            #     print('Steps: {} , Running loss: {}'.format(i, running_loss))
 
-            # if args["save_model"] and i % args['logging_steps'] == 0:
-            #     validate_path(args["output_dir"])
-            #     validate_path(join(args["output_dir"], "logs"))
-            #     save_model(model, join(args["output_dir"], "logs"))
+            if i % args['logging_steps'] == 0:
+                print('Steps: {} , loss: {}'.format(i, loss_num))
+                _log(args["output_dir"], "loss_by_steps_" + args['starting_timestamp'] + ".csv", i, loss_num)
 
         running_loss = running_loss / int(num_batches)
         print('Epoch: {} , Running loss: {}'.format(epoch, running_loss))
+        _log(args["output_dir"], "epoch_average_loss_" + args['starting_timestamp'] + ".csv", epoch, running_loss)
 
     return model
+
+
+def _log(path, file, index, running_loss):
+    path = validate_path(path)
+    path = validate_path(join(path, "logs"))
+    file = join(path, file)
+    df = pd.DataFrame([[index, running_loss]], columns=['index', 'loss'])
+    df.to_csv(file, sep='\t', encoding='utf-8', mode='a', header=False, index=False)
 
 
 def train_with_huggingface(args, model, datasets):

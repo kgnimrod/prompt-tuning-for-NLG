@@ -58,7 +58,8 @@ class Experiment:
             'save_model': self.config["SAVE_MODEL"],
             'save_steps': self.config["SAVE_STEPS"],
             'save_total_limit': self.config["SAVE_TOTAL_LIMIT"],
-            'wandb_run_name': self.config["WANDB_RUN_NAME"]
+            'wandb_run_name': self.config["WANDB_RUN_NAME"],
+            'starting_timestamp': str(self.starting_timestamp)
         }
 
     def _load_dataset(self, dataset):
@@ -97,7 +98,6 @@ class Experiment:
             save_soft_prompt(
                 self.model,
                 join(self.training_args["output_dir"], "models"),
-                self.training_args["output_dir"],
                 self.training_args["num_train_epochs"],
                 self.config["PRE_TRAINED_MODEL"],
                 self.number_prompt_tokens
@@ -160,6 +160,7 @@ class Experiment:
 
     def _to_device(self):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        print(device)
         self.model.to(device)
         # self.model = torch.nn.DataParallel(model, device_ids=config["GPUS"])
         for item in self.inputs:
