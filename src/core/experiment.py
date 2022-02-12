@@ -1,6 +1,5 @@
 from datetime import datetime
-from os import mkdir
-from os.path import join, exists
+from os.path import join
 
 import torch
 from transformers import T5Tokenizer, T5ForConditionalGeneration
@@ -9,7 +8,7 @@ import src.core.pre_process as pre_process
 from src.core.inference import make_predictions
 from src.core.t5_promt_tuning import T5PromptTuning
 from src.core.config import load_config_from_yaml
-from src.core.persistance import save_soft_prompt, save_model, load_model
+from src.core.persistance import save_soft_prompt, load_model, save_state_dict, validate_path
 from src.core.train import train
 
 
@@ -17,22 +16,29 @@ class Experiment:
     def __init__(self, config):
         self.count = 0
         self.config = config
-        self.dataset_config = load_config_from_yaml(self.config["DATASET_CONFIG"])
         self.number_prompt_tokens = self.config["NUMBER_PROMPT_TOKENS"]
         self.random_range = self.config["RANDOM_RANGE"]
         self.init_from_vocab = self.config["INIT_FROM_VOCAB"]
 
-        if self.dataset_config["PRE_PROCESS"] == 'custom':
-            self.datasets = getattr(pre_process, self.dataset_config["PRE_PROCESS_METHOD"])(self.dataset_config)
+        datasets = self.config["DATASETS"]
+        self.source_datasets = {}
+        for dataset in datasets:
+            self._load_dataset(dataset)
+
+        if self.config["SAMPLE"]:
+            self.data = pre_process.sample(
+                self.source_datasets,
+                self.config["SAMPLE_SIZE_TRAIN"],
+                self.config["SAMPLE_SIZE_EVAL"]
+            )
         else:
-            self.datasets = pre_process.pre_process_huggingface_dataset(self.dataset_config)
+            self.data = pre_process.combine(self.source_datasets)
 
         self.tokenizer = None
         self.model = None
         self.predictions = None
         self.inputs = {}
-        self.starting_timestamp = datetime.timestamp()
-
+        self.starting_timestamp = datetime.timestamp(datetime.now())
 
         self.training_args = {
             'batch_size': self.config["BATCH_SIZE"],
@@ -46,7 +52,7 @@ class Experiment:
             'logging_steps': self.config["LOGGING_STEPS"],
             'metric_for_best_model': self.config["METRIC_FOR_BEST_MODEL"],
             'num_train_epochs': self.config["NUM_TRAIN_EPOCHS"],
-            'output_dir':  join("runs", self.config["OUTPUT_DIR"] + "_" + str(self.starting_timestamp)),
+            'output_dir':  join("runs", self.config["OUTPUT_DIR"]),
             'prediction_loss_only': self.config["PREDICTION_LOSS_ONLY"],
             'remove_unused_columns': self.config["REMOVE_UNUSED_COLUMNS"],
             'save_model': self.config["SAVE_MODEL"],
@@ -55,23 +61,39 @@ class Experiment:
             'wandb_run_name': self.config["WANDB_RUN_NAME"]
         }
 
+    def _load_dataset(self, dataset):
+        dataset_config = load_config_from_yaml(dataset["DATASET_CONFIG"])
+
+        if dataset_config["PRE_PROCESS"] == 'custom':
+            self.source_datasets[dataset["KEY"]] = getattr(pre_process, dataset_config["PRE_PROCESS_METHOD"])(dataset_config)
+        else:
+            self.source_datasets[dataset["KEY"]] = pre_process.pre_process_huggingface_dataset(dataset_config)
+
     def run(self):
         self.tokenizer = T5Tokenizer.from_pretrained(self.config["PRE_TRAINED_MODEL"])
         self._set_model()
 
         if self.config["TRAIN"]:
-            self.inputs['train'] = self._prepare_inputs(self.datasets['train'])
-            self.inputs['validation'] = self._prepare_inputs(self.datasets['validation'])
+            self.inputs['train'] = self._prepare_inputs(self.data['train'])
+            self.inputs['validation'] = self._prepare_inputs(self.data['validation'])
         if self.config["EVALUATE"]:
-            self.inputs['test'] = self._prepare_inputs(self.datasets['test'])
+            self.inputs['test'] = self._prepare_inputs(self.data['test'])
         self._to_device()
         if self.config["TRAIN"]:
             train(self.training_args, self.model, self.inputs)
 
         if self.config["SAVE_MODEL"]:
-            save_model(self.model, join(self.training_args["output_dir"], "models"))
+            validate_path(self.training_args["output_dir"])
+            validate_path(join(self.training_args["output_dir"], "models"))
+            save_state_dict(
+                self.model,
+                join(self.training_args["output_dir"], "models"),
+                "model_state_dict_started_" + str(self.starting_timestamp)
+            )
 
         if self.config["SAVE_SOFT_PROMPTS"]:
+            validate_path(self.training_args["output_dir"])
+            validate_path(join(self.training_args["output_dir"], "models"))
             save_soft_prompt(
                 self.model,
                 join(self.training_args["output_dir"], "models"),
