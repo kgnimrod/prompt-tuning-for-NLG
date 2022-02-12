@@ -1,9 +1,7 @@
 from os.path import join
-from IPython.display import HTML, display
+# from IPython.display import HTML, display
 
 from transformers import TrainingArguments, Trainer, IntervalStrategy, Adafactor
-
-from src.core.persistance import save_model, validate_path
 
 
 def train(args, model, datasets, mode="torch"):
@@ -24,7 +22,7 @@ def train_with_torch(args, model, datasets):
         print('Running epoch: {}'.format(epoch))
         running_loss = 0
 
-        out = display(progress(1, num_batches + 1), display_id=True)
+        # out = display(progress(1, num_batches + 1), display_id=True)
         for i in range(num_batches):
 
             # clear out the gradients of all Variables
@@ -48,16 +46,15 @@ def train_with_torch(args, model, datasets):
 
             if i % 10 == 0:
                 loss_per_10_steps.append(loss_num)
-            if out is not None:
-                out.update(progress(loss_num, i, num_batches + 1))
-            elif i % 100 == 0:
-                print('Steps: {} , Running loss: {}'.format(i, running_loss))
+            # if out is not None:
+            #     out.update(progress(loss_num, i, num_batches + 1))
+            # elif i % 100 == 0:
+            #     print('Steps: {} , Running loss: {}'.format(i, running_loss))
 
             # if args["save_model"] and i % args['logging_steps'] == 0:
             #     validate_path(args["output_dir"])
             #     validate_path(join(args["output_dir"], "logs"))
             #     save_model(model, join(args["output_dir"], "logs"))
-
 
         running_loss = running_loss / int(num_batches)
         print('Epoch: {} , Running loss: {}'.format(epoch, running_loss))
@@ -121,14 +118,14 @@ def optimizer_adafactor(model,
         warmup_init=warmup_init
     )
 
-
-def progress(loss, value, maximum=100):
-    return HTML(""" Batch loss :{loss}
-        <progress
-            value='{value}'
-            maximum='{maximum}',
-            style='width: 100%'
-        >
-            {value}
-        </progress>
-    """.format(loss=loss, value=value, maximum=maximum))
+#
+# def progress(loss, value, maximum=100):
+#     return HTML(""" Batch loss :{loss}
+#         <progress
+#             value='{value}'
+#             maximum='{maximum}',
+#             style='width: 100%'
+#         >
+#             {value}
+#         </progress>
+#     """.format(loss=loss, value=value, maximum=maximum))
