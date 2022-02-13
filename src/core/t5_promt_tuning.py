@@ -59,6 +59,7 @@ class T5PromptTuning(T5ForConditionalGeneration):
     # this method appends the learned prompt embeddings to the input ids of the input before forward pass is calculated
     def embed_tokens(self, input_ids):
         self.shared.to(self.device)
+        input_ids.to(self.device)
         inputs_embeds = self.shared(input_ids)
 
         if len(list(inputs_embeds.shape)) == 2:
