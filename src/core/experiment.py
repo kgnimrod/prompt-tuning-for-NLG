@@ -8,7 +8,8 @@ import src.core.pre_process as pre_process
 from src.core.inference import make_predictions
 from src.core.t5_promt_tuning import T5PromptTuning
 from src.core.config import load_config_from_yaml
-from src.core.persistance import save_soft_prompt, load_model, save_state_dict, validate_path
+from src.core.persistance import save_soft_prompt, load_model, save_state_dict, validate_path, save_predictions, \
+    load_state_dict
 from src.core.train import train
 
 
@@ -81,48 +82,53 @@ class Experiment:
         if self.config["EVALUATE"]:
             self.inputs['test'] = self._prepare_inputs(self.data['test'])
         self._to_device()
+
         if self.config["TRAIN"]:
             train(self.training_args, self.model, self.inputs, self.config["TRAIN_MODE"])
 
-        if self.config["SAVE_MODEL"]:
-            validate_path(self.training_args["output_dir"])
-            validate_path(join(self.training_args["output_dir"], "models"))
-            save_state_dict(
-                self.model,
-                join(self.training_args["output_dir"], "models"),
-                "model_state_dict_started_" + str(self.starting_timestamp)
-            )
+            if self.config["SAVE_MODEL"]:
+                validate_path(self.training_args["output_dir"])
+                validate_path(join(self.training_args["output_dir"], "models"))
+                save_state_dict(
+                    self.model,
+                    join(self.training_args["output_dir"], "models"),
+                    "model_state_dict_started_" + str(self.starting_timestamp)
+                )
 
-        if self.config["SAVE_SOFT_PROMPTS"]:
-            validate_path(self.training_args["output_dir"])
-            validate_path(join(self.training_args["output_dir"], "models"))
-            save_soft_prompt(
-                self.model,
-                join(self.training_args["output_dir"], "models"),
-                self.training_args["num_train_epochs"],
-                self.config["PRE_TRAINED_MODEL"],
-                self.number_prompt_tokens
-            )
+            if self.config["SAVE_SOFT_PROMPTS"]:
+                validate_path(self.training_args["output_dir"])
+                validate_path(join(self.training_args["output_dir"], "models"))
+                save_soft_prompt(
+                    self.model,
+                    join(self.training_args["output_dir"], "models"),
+                    self.training_args["num_train_epochs"],
+                    self.config["PRE_TRAINED_MODEL"],
+                    self.number_prompt_tokens
+                )
 
         if self.config["EVALUATE"]:
-            self.predictions = make_predictions(
-                self.model, self.inputs['test'], self.tokenizer, use_embeddings=self.config["PROMPT_TUNING"]
-            )
+            self.predictions = make_predictions(self.model, self.inputs['test'], self.tokenizer)
+            validate_path(self.training_args["output_dir"])
+            path = validate_path(join(self.training_args["output_dir"], "predictions"))
+            save_predictions(self.predictions, path, "predictions_" + str(self.starting_timestamp))
 
     def _set_model(self):
-        if self.config["LOAD_MODEL"]:
-            self.model = load_model(self.config["INPUT_DIR"])
+        if self.config["PROMPT_TUNING"]:
+            self.model = T5PromptTuning.from_pretrained(
+                self.config["PRE_TRAINED_MODEL"],
+                number_tokens=self.number_prompt_tokens,
+                initialize_from_vocab=self.init_from_vocab
+            )
         else:
-            if self.config["PROMPT_TUNING"]:
-                self.model = T5PromptTuning.from_pretrained(
-                    self.config["PRE_TRAINED_MODEL"],
-                    number_tokens=self.number_prompt_tokens,
-                    initialize_from_vocab=self.init_from_vocab
-                )
+            self.model = T5ForConditionalGeneration.from_pretrained(
+                self.config["PRE_TRAINED_MODEL"]
+            )
+
+        if self.config["LOAD_MODEL"]:
+            if self.config['TRAIN']:
+                self.model = load_model(join(self.config["INPUT_DIR"], self.config["INPUT_FILE"]))
             else:
-                self.model = T5ForConditionalGeneration.from_pretrained(
-                    self.config["PRE_TRAINED_MODEL"]
-                )
+                load_state_dict(self.model, self.config["INPUT_DIR"], self.config["INPUT_FILE"])
 
     def _prepare_inputs(self, dataset):
         # train_dataset.shard(num_shards=4, index=0)

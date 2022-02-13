@@ -1,5 +1,7 @@
 from os import mkdir
 from os.path import join, exists
+
+import pandas as pd
 import torch
 
 
@@ -22,7 +24,8 @@ def validate_path(path):
 
 
 def load_model(path):
-    return torch.load(path)
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    return torch.load(path, map_location=device)
 
 
 def save_checkpoint(epoch, model, optimizer, loss, path, filename="model"):
@@ -51,5 +54,14 @@ def save_state_dict(model, path, filename="model_state_dict"):
     torch.save(model.state_dict(), path)
 
 
-def load_state_dict(model, path):
-    model.load_state_dict(torch.load(path))
+def load_state_dict(model, path, filename="model_state_dict.model"):
+    file = join(path, filename)
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model.load_state_dict(torch.load(file, map_location=device))
+
+
+def save_predictions(predictions, path, filename="predictions.csv"):
+    path = validate_path(path)
+    file = join(path, filename)
+    df = pd.DataFrame(predictions)
+    df.to_csv(file, sep='\t', encoding='utf-8')
