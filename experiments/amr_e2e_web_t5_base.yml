@@ -5,8 +5,11 @@ DATASETS:
   -
     KEY: e2e
     DATASET_CONFIG: config/e2e_nlg.yml
+  -
+    KEY: web_nlg
+    DATASET_CONFIG: config/web_nlg_custom.yml
 
-PRE_TRAINED_MODEL: t5-small
+PRE_TRAINED_MODEL: t5-base
 LOAD_MODEL: False
 PROMPT_TUNING: True
 
@@ -18,8 +21,8 @@ NUMBER_PROMPT_TOKENS: 50
 RANDOM_RANGE: 0.5
 INIT_FROM_VOCAB: True
 
-TRAIN: False
-TRAIN_MODE: torch
+TRAIN: True
+TRAIN_MODE: huggingface
 EVALUATE: False
 
 BATCH_SIZE: 8
@@ -37,10 +40,10 @@ PREDICTION_LOSS_ONLY: True
 REMOVE_UNUSED_COLUMNS: True
 SAVE_STEPS: 1000
 SAVE_TOTAL_LIMIT: 1
-WANDB_RUN_NAME: amr_nlg_t5_small
+WANDB_RUN_NAME: amr_e2e_web_t5_base
 
-OUTPUT_DIR: amr_e2e_t5_small
-INPUT_DIR: run/amr_e2e_t5_small/models
+OUTPUT_DIR: amr_e2e_web_t5_base
+INPUT_DIR: runs/amr_e2e_web_t5_base/models
 
 SAVE_MODEL: True
 SAVE_SOFT_PROMPTS: True
