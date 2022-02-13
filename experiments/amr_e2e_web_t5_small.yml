@@ -40,10 +40,10 @@ PREDICTION_LOSS_ONLY: True
 REMOVE_UNUSED_COLUMNS: True
 SAVE_STEPS: 1000
 SAVE_TOTAL_LIMIT: 1
-WANDB_RUN_NAME: amr_e2e_t5_small
+WANDB_RUN_NAME: amr_e2e_web_t5_small
 
-OUTPUT_DIR: amr_e2e_t5_small
-INPUT_DIR: runs/amr_e2e_t5_small/models
+OUTPUT_DIR: amr_e2e_web_t5_small
+INPUT_DIR: runs/amr_e2e_web_t5_small/models
 
 SAVE_MODEL: True
 SAVE_SOFT_PROMPTS: True
