@@ -1,0 +1,14 @@
+DATASET_PATH: data/web_nlg
+DATASET_NAME_TRAIN: webNLG2020_train_no_duplicate_inputs.csv
+DATASET_NAME_TEST: webNLG2020_test_no_duplicate_inputs.csv
+
+NAME_TRAIN_DATASET: train
+NAME_VALIDATION_DATASET: dev
+NAME_TEST_DATASET: test
+
+PRE_PROCESS: custom
+PRE_PROCESS_METHOD: pre_process_web_nlg_dataset
+
+FLATTEN: True
+INPUT_IDS: input_text
+LABELS: target_text
