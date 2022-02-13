@@ -144,23 +144,25 @@ class T5PromptTuning(T5ForConditionalGeneration):
         if to_encoder_only:
             return self.encoder(inputs_embeds=inputs_embeds, return_dict=True)
 
-        # for inference (i.e. generate) - build pipeline for generate function
-        if decoder_input_ids is not None:
-            return super().forward(
-                inputs_embeds=inputs_embeds,
-                decoder_input_ids=decoder_input_ids,
-                encoder_outputs=encoder_outputs,
-                use_cache=use_cache,
-                return_dict=return_dict,
-            )
-
-        # for training
         return super().forward(
+            input_ids=input_ids,
+            past_key_values=past_key_values,
             attention_mask=attention_mask,
+            token_type_ids=token_type_ids,
+            position_ids=position_ids,
+            head_mask=head_mask,
             inputs_embeds=inputs_embeds,
-            labels=labels,
-            decoder_attention_mask=decoder_attention_mask,
-            use_cache=use_cache,
-            return_dict=return_dict,
+            encoder_hidden_states=encoder_hidden_states,
+            encoder_attention_mask=encoder_attention_mask,
             encoder_outputs=encoder_outputs,
+            decoder_input_ids=decoder_input_ids,
+            decoder_head_mask=decoder_head_mask,
+            decoder_attention_mask=decoder_attention_mask,
+            cross_attn_head_mask=cross_attn_head_mask,
+            labels=labels,
+            use_cache=use_cache,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict,
+            to_encoder_only=to_encoder_only,
         )
