@@ -1,6 +1,6 @@
 from os.path import join
 import pandas as pd
-from datasets import load_dataset, Dataset, concatenate_datasets
+from datasets import load_dataset, Dataset
 
 
 def create_list_of_batches(batch_size, num_batches, data, tokenizer):
@@ -101,6 +101,26 @@ def pre_process_amr_dataset(config):
             list(zip(meaning_representations[1404:], target_sentences[1404:])), columns=['input_ids', 'labels']
         )
     )
+    return {'train': train_dataset, 'validation': val_dataset, 'test': test_dataset}
+
+
+def pre_process_web_nlg_dataset(config):
+    train_data = pd.read_csv(join(config['DATASET_PATH'], config['DATASET_NAME_TRAIN']))
+    test_data = pd.read_csv(join(config['DATASET_PATH'], config['DATASET_NAME_TEST']))
+    train_data = train_data.iloc[:len(train_data)-3, :]
+    test_data = test_data.iloc[:len(test_data)-7, :]
+
+    train_dataset = Dataset.from_pandas(pd.DataFrame(train_data, columns=[config["INPUT_IDS"], config["LABELS"]]))
+    train_dataset = train_dataset.rename_column(config["INPUT_IDS"], 'input_ids')
+    train_dataset = train_dataset.rename_column(config["LABELS"], 'labels')
+    split_dict = train_dataset.train_test_split(test_size=0.1)
+    train_dataset = split_dict['train']
+    val_dataset = split_dict['test']
+
+    test_dataset = Dataset.from_pandas(pd.DataFrame(test_data, columns=[config["INPUT_IDS"], config["LABELS"]]))
+    test_dataset = test_dataset.rename_column(config["INPUT_IDS"], 'input_ids')
+    test_dataset = test_dataset.rename_column(config["LABELS"], 'labels')
+
     return {'train': train_dataset, 'validation': val_dataset, 'test': test_dataset}
 
 
