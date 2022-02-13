@@ -66,6 +66,7 @@ class T5PromptTuning(T5ForConditionalGeneration):
         # the shape of the tensor that will be returned will be:
         # [batch_size, max_sequence_length, number_embeddings] -> [8, 600, 512]
         learned_embeds = self.soft_prompt.repeat(inputs_embeds.size(0), 1, 1)
+        learned_embeds.to(self.device)
         return torch.cat([learned_embeds, inputs_embeds], dim=1)
 
     # to make sure that padding token ids of the labels are not taken into account by the loss function
