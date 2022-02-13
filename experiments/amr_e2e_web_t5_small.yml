@@ -22,7 +22,7 @@ RANDOM_RANGE: 0.5
 INIT_FROM_VOCAB: True
 
 TRAIN: True
-TRAIN_MODE: torch
+TRAIN_MODE: huggingface
 EVALUATE: False
 
 BATCH_SIZE: 8
