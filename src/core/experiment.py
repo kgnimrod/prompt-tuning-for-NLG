@@ -5,7 +5,7 @@ import torch
 from transformers import T5Tokenizer, T5ForConditionalGeneration
 
 import src.core.pre_process as pre_process
-from src.core.inference import make_predictions
+from src.core.inference import make_predictions, make_prediction_talk
 from src.core.t5_promt_tuning import T5PromptTuningLM
 from src.core.config import load_config_from_yaml
 from src.core.persistance import save_soft_prompt, load_model, save_state_dict, validate_path, save_predictions, \
@@ -107,6 +107,7 @@ class Experiment:
                 )
 
         if self.config["EVALUATE"]:
+            self.predictions = make_prediction_talk(self.model, self.tokenizer)
             self.predictions = make_predictions(self.model, self.inputs['test'], self.tokenizer)
             validate_path(self.training_args["output_dir"])
             path = validate_path(join(self.training_args["output_dir"], "predictions"))
@@ -144,7 +145,7 @@ class Experiment:
     def _tokenize(self, batch):
         inputs = []
         for item in batch['input_ids']:
-            inputs.append(item[0][0])
+            inputs.append('Translate from Graph to Text: ' + item[0][0] + '</s>')
 
         tokenized_input = self.tokenizer.batch_encode_plus(
             inputs, padding='max_length', max_length=500
@@ -153,7 +154,7 @@ class Experiment:
         labels = []
         for item in batch['labels']:
             if len(item) > 0:
-                labels.append(item[0])
+                labels.append(item[0] + '</s>')
             else:
                 labels.append('None')
                 self.count += 1

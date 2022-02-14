@@ -28,3 +28,26 @@ def make_predictions(model, encoding, tokenizer):
         # flatten the predictions list which has the length of batch_size * number_of_batches
         model_predictions = list(chain(*model_predictions))
     return model_predictions
+
+
+def make_prediction_talk(model, tokenizer):
+    # encode context the generation is conditioned on
+    input_ids = tokenizer.encode('Translate from Graph to Text: Nie_Haisheng | birthDate | 1964-10-13', return_tensors='tf')
+    # generate text until the output length (which includes the context length) reaches 50
+    greedy_output = model.generate(input_ids, max_length=50)
+    print("Output:\n" + 500 * '-')
+    print(tokenizer.decode(greedy_output[0], skip_special_tokens=True))
+
+    # encode context the generation is conditioned on
+    input_ids = tokenizer.encode('Translate from Graph to Text: Nie_Haisheng | nationality | People\'s_Republic_of_China', return_tensors='tf')
+    # generate text until the output length (which includes the context length) reaches 50
+    greedy_output = model.generate(input_ids, max_length=50)
+    print("Output:\n" + 500 * '-')
+    print(tokenizer.decode(greedy_output[0], skip_special_tokens=True))
+
+    # encode context the generation is conditioned on
+    input_ids = tokenizer.encode('Translate from Graph to Text: Nie_Haisheng | mission | Shenzhou_10', return_tensors='tf')
+    # generate text until the output length (which includes the context length) reaches 50
+    greedy_output = model.generate(input_ids, max_length=50)
+    print("Output:\n" + 500 * '-')
+    print(tokenizer.decode(greedy_output[0], skip_special_tokens=True))
