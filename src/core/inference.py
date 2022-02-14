@@ -8,7 +8,7 @@ def make_predictions(model, encoding, tokenizer):
     model.eval()
     with torch.no_grad():
         input_ids = encoding['input_ids']
-        attention_mask = encoding[i]['attention_mask']
+        attention_mask = encoding['attention_mask']
 
         args = {
             'input_ids': input_ids,
