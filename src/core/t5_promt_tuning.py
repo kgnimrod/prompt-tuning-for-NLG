@@ -58,7 +58,7 @@ class T5PromptTuning(T5ForConditionalGeneration):
         return self.soft_prompt
 
     # this method appends the learned prompt embeddings to the input ids of the input before forward pass is calculated
-    def embed_tokens(self, input_ids):
+    def _cat_learned_embedding_to_inp(self, input_ids):
         inputs_embeds = self.get_input_embeddings()(input_ids)
         #         inputs_embeds = self.transformer.wte(input_ids)
 
@@ -67,7 +67,6 @@ class T5PromptTuning(T5ForConditionalGeneration):
 
         # [batch_size, n_tokens, n_embd]
         learned_embeds = self.soft_prompt.weight.repeat(inputs_embeds.size(0), 1, 1)
-
         inputs_embeds = torch.cat([learned_embeds, inputs_embeds], dim=1)
 
         return inputs_embeds
@@ -125,9 +124,9 @@ class T5PromptTuning(T5ForConditionalGeneration):
             to_encoder_only=False,
     ):
         if input_ids is not None:
-            inputs_embeds = self.embed_tokens(input_ids).to(
-                self.device
-            )
+            inputs_embeds = self._cat_learned_embedding_to_inp(input_ids).to(self.device)
+            # if decoder_input_ids is not None:
+            #     decoder_input_ids = self.embed_tokens(decoder_input_ids).to(self.device)
 
         if labels is not None:
             labels = self.extend_labels(labels).to(self.device)
@@ -144,25 +143,42 @@ class T5PromptTuning(T5ForConditionalGeneration):
         if to_encoder_only:
             return self.encoder(inputs_embeds=inputs_embeds, return_dict=True)
 
+        # for inference (i.e. generate) - build pipeline for generate function
+        if decoder_input_ids is not None:
+            return super().forward(
+                inputs_embeds=inputs_embeds,
+                decoder_input_ids=decoder_input_ids,
+                encoder_outputs=encoder_outputs,
+                use_cache=use_cache,
+                return_dict=return_dict,
+            )
+
+        # for training
         return super().forward(
-            input_ids=input_ids,
-            past_key_values=past_key_values,
             attention_mask=attention_mask,
-            token_type_ids=token_type_ids,
-            position_ids=position_ids,
-            head_mask=head_mask,
             inputs_embeds=inputs_embeds,
-            encoder_hidden_states=encoder_hidden_states,
-            encoder_attention_mask=encoder_attention_mask,
-            encoder_outputs=encoder_outputs,
-            decoder_input_ids=decoder_input_ids,
-            decoder_head_mask=decoder_head_mask,
-            decoder_attention_mask=decoder_attention_mask,
-            cross_attn_head_mask=cross_attn_head_mask,
             labels=labels,
+            decoder_attention_mask=decoder_attention_mask,
             use_cache=use_cache,
-            output_attentions=output_attentions,
-            output_hidden_states=output_hidden_states,
             return_dict=return_dict,
-            to_encoder_only=to_encoder_only,
+            encoder_outputs=encoder_outputs,
         )
+
+        # return super().forward(
+        #     input_ids=None,
+        #     attention_mask=attention_mask,
+        #     decoder_input_ids=decoder_input_ids,
+        #     decoder_attention_mask=decoder_attention_mask,
+        #     head_mask=head_mask,
+        #     decoder_head_mask=decoder_head_mask,
+        #     cross_attn_head_mask=cross_attn_head_mask,
+        #     encoder_outputs=encoder_outputs,
+        #     past_key_values=past_key_values,
+        #     inputs_embeds=inputs_embeds,
+        #     decoder_inputs_embeds=None,
+        #     labels=labels,
+        #     use_cache=use_cache,
+        #     output_attentions=output_attentions,
+        #     output_hidden_states=output_hidden_states,
+        #     return_dict=return_dict,
+        # )

@@ -8,18 +8,16 @@ def make_predictions(model, encoding, tokenizer):
     model.eval()
     with torch.no_grad():
         input_ids = encoding['input_ids']
-        # attention_mask = encoding[i]['attention_mask']
+        attention_mask = encoding[i]['attention_mask']
 
         args = {
             'input_ids': input_ids,
-            # 'decoder_input_ids': input_ids,
-            'do_sample': True,
+            'attention_mask': attention_mask,
             'max_length': 500,
-            # 'bos_token_id': 0,
-            # 'pad_token_id': 0,
-            # 'eos_token_id': 1,
-            # 'use_cache': True,
-            'top_k': 50
+            'bos_token_id': 0,
+            'pad_token_id': 0,
+            'eos_token_id': 1,
+            'use_cache': True
         }
 
         output = tokenizer.batch_decode(
