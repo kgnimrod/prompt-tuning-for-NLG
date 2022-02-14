@@ -182,3 +182,8 @@ class T5PromptTuning(T5ForConditionalGeneration):
         #     output_hidden_states=output_hidden_states,
         #     return_dict=return_dict,
         # )
+
+
+class T5PromptTuningLM(T5PromptTuning, T5ForConditionalGeneration):
+    def __init__(self, config):
+        super().__init__(config)

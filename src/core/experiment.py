@@ -6,7 +6,7 @@ from transformers import T5Tokenizer, T5ForConditionalGeneration
 
 import src.core.pre_process as pre_process
 from src.core.inference import make_predictions
-from src.core.t5_promt_tuning import T5PromptTuning
+from src.core.t5_promt_tuning import T5PromptTuningLM
 from src.core.config import load_config_from_yaml
 from src.core.persistance import save_soft_prompt, load_model, save_state_dict, validate_path, save_predictions, \
     load_state_dict
@@ -114,7 +114,7 @@ class Experiment:
 
     def _set_model(self):
         if self.config["PROMPT_TUNING"]:
-            self.model = T5PromptTuning.from_pretrained(
+            self.model = T5PromptTuningLM.from_pretrained(
                 self.config["PRE_TRAINED_MODEL"],
                 number_tokens=self.number_prompt_tokens,
                 initialize_from_vocab=self.init_from_vocab
