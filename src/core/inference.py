@@ -20,6 +20,9 @@ def make_predictions(model, encoding, tokenizer):
             'use_cache': True
         }
 
+        print(model.get_device())
+        print(args['input_ids'].get_device())
+        print(args['attention_mask'].get_device())
         output = tokenizer.batch_decode(
             model.generate(**args),
             skip_special_tokens=True)
@@ -32,21 +35,21 @@ def make_predictions(model, encoding, tokenizer):
 
 def make_prediction_talk(model, tokenizer):
     # encode context the generation is conditioned on
-    input_ids = tokenizer.encode('Translate from Graph to Text: Nie_Haisheng | birthDate | 1964-10-13', return_tensors='tf')
+    input_ids = tokenizer.encode('Translate from Graph to Text: Nie_Haisheng | birthDate | 1964-10-13', return_tensors='pt')
     # generate text until the output length (which includes the context length) reaches 50
     greedy_output = model.generate(input_ids, max_length=50)
     print("Output:\n" + 500 * '-')
     print(tokenizer.decode(greedy_output[0], skip_special_tokens=True))
 
     # encode context the generation is conditioned on
-    input_ids = tokenizer.encode('Translate from Graph to Text: Nie_Haisheng | nationality | People\'s_Republic_of_China', return_tensors='tf')
+    input_ids = tokenizer.encode('Translate from Graph to Text: Nie_Haisheng | nationality | People\'s_Republic_of_China', return_tensors='pt')
     # generate text until the output length (which includes the context length) reaches 50
     greedy_output = model.generate(input_ids, max_length=50)
     print("Output:\n" + 500 * '-')
     print(tokenizer.decode(greedy_output[0], skip_special_tokens=True))
 
     # encode context the generation is conditioned on
-    input_ids = tokenizer.encode('Translate from Graph to Text: Nie_Haisheng | mission | Shenzhou_10', return_tensors='tf')
+    input_ids = tokenizer.encode('Translate from Graph to Text: Nie_Haisheng | mission | Shenzhou_10', return_tensors='pt')
     # generate text until the output length (which includes the context length) reaches 50
     greedy_output = model.generate(input_ids, max_length=50)
     print("Output:\n" + 500 * '-')

@@ -10,7 +10,7 @@ DATASETS:
     DATASET_CONFIG: config/web_nlg_custom.yml
 
 PRE_TRAINED_MODEL: t5-small
-LOAD_MODEL: False
+LOAD_MODEL: True
 PROMPT_TUNING: True
 
 SAMPLE: True
@@ -21,9 +21,9 @@ NUMBER_PROMPT_TOKENS: 50
 RANDOM_RANGE: 0.5
 INIT_FROM_VOCAB: True
 
-TRAIN: True
+TRAIN: False
 TRAIN_MODE: huggingface
-EVALUATE: False
+EVALUATE: True
 
 BATCH_SIZE: 8
 EVAL_BATCH_SIZE: 8
@@ -44,6 +44,7 @@ WANDB_RUN_NAME: amr_e2e_web_t5_small
 
 OUTPUT_DIR: amr_e2e_web_t5_small
 INPUT_DIR: runs/amr_e2e_web_t5_small/models
+INPUT_FILE: model_state_dict_started_1644842664.1508.model
 
 SAVE_MODEL: True
-SAVE_SOFT_PROMPTS: True
+SAVE_SOFT_PROMPTS: False
