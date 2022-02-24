@@ -59,6 +59,7 @@ class T5PromptTuning(T5ForConditionalGeneration):
 
     # this method appends the learned prompt embeddings to the input ids of the input before forward pass is calculated
     def _cat_learned_embedding_to_inp(self, input_ids):
+        # print("in t5_prompt_tuning" + str(input_ids.to_device()))
         inputs_embeds = self.get_input_embeddings()(input_ids)
         #         inputs_embeds = self.transformer.wte(input_ids)
 

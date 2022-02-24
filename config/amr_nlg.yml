@@ -1,13 +1,17 @@
 DATASET_PATH: data/amr
-DATASET_NAME: amr-bank-struct-v3.0.txt
+DATASET_NAME_TRAIN: amr_train_no_duplicate_inputs.csv
+DATASET_NAME_TEST: amr_test_no_duplicate_inputs.csv
 
 NAME_TRAIN_DATASET: train
 NAME_VALIDATION_DATASET: validation
 NAME_TEST_DATASET: test
 
 PRE_PROCESS: custom
-PRE_PROCESS_METHOD: pre_process_amr_dataset
+PRE_PROCESS_METHOD: pre_process_custom_dataset
 
 FLATTEN: False
-INPUT_IDS: meaning_representation
-LABELS: human_reference
+INPUT_IDS: input_text
+LABELS: target_text
+
+TRIM_TRAIN: 6
+TRIM_TEST: 3

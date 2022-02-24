@@ -1,21 +1,14 @@
 DATASETS:
   -
-    KEY: amr
-    DATASET_CONFIG: config/amr_nlg.yml
-  -
-    KEY: e2e
+    KEY: e2e_nlg
     DATASET_CONFIG: config/e2e_nlg.yml
-  -
-    KEY: web_nlg
-    DATASET_CONFIG: config/web_nlg_custom.yml
 
 PRE_TRAINED_MODEL: t5-small
 LOAD_MODEL: False
 PROMPT_TUNING: True
 
-SAMPLE: True
-SAMPLE_SIZE_TRAIN: 1000
-SAMPLE_SIZE_EVAL: 136
+SAMPLE: False
+SAMPLE_SIZE:
 
 NUMBER_PROMPT_TOKENS: 50
 RANDOM_RANGE: 0.5
@@ -35,16 +28,14 @@ LOAD_BEST_MODEL_AT_END: True
 LOGGING_FIRST_STEP: False
 LOGGING_STEPS: 10
 METRIC_FOR_BEST_MODEL: loss
-NUM_TRAIN_EPOCHS: 1
-PREDICTION_LOSS_ONLY: False
+NUM_TRAIN_EPOCHS: 4
+PREDICTION_LOSS_ONLY: True
 REMOVE_UNUSED_COLUMNS: True
 SAVE_STEPS: 1000
 SAVE_TOTAL_LIMIT: 1
-WANDB_RUN_NAME: amr_e2e_web_t5_small_train_predict
+WANDB_RUN_NAME: e2e_nlg_t5_small
 
-OUTPUT_DIR: amr_e2e_web_t5_small_train_predict
-INPUT_DIR: runs/amr_e2e_web_t5_small_train_predict/models
-INPUT_FILE:
+OUTPUT_DIR: e2e_nlg_t5_small
+INPUT_DIR: runs/e2e_nlg_t5_small/models
 
 SAVE_MODEL: True
-SAVE_SOFT_PROMPTS: False
