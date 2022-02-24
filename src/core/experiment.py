@@ -1,6 +1,9 @@
 from datetime import datetime
 from os.path import join
 
+import torch
+from torch.utils.data import DataLoader
+
 from transformers import T5Tokenizer, T5ForConditionalGeneration, TrainingArguments, Trainer, IntervalStrategy
 
 import src.core.pre_process as pre_process
@@ -74,7 +77,8 @@ class Experiment:
         dataset_config = load_config_from_yaml(dataset["DATASET_CONFIG"])
 
         if dataset_config["PRE_PROCESS"] == 'custom':
-            self.source_datasets[dataset["KEY"]] = getattr(pre_process, dataset_config["PRE_PROCESS_METHOD"])(dataset_config)
+            self.source_datasets[dataset["KEY"]] = getattr(pre_process, dataset_config["PRE_PROCESS_METHOD"])(
+                dataset_config)
         else:
             self.source_datasets[dataset["KEY"]] = pre_process.pre_process_huggingface_dataset(dataset_config)
 
@@ -159,18 +163,61 @@ class Experiment:
         trainer.train()
 
     def _predict(self):
-        trainer = Trainer(
-            model=self.model,
-            args=self.trainer_args
-        )
+        # trainer = Trainer(
+        #     model=self.model,
+        #     args=self.trainer_args
+        # )
+        #
+        # raw_prediction = trainer.predict(test_dataset=self.inputs["test"])
+        # predictions = []
+        # print("predictions: " + str(len(raw_prediction.predictions)))
+        # print(raw_prediction.predictions)
+        # print("label_ids: " + str(len(raw_prediction.label_ids)))
+        # print(raw_prediction.label_ids)
+        # print("predictions printed, next is decoding")
+        # for entry in raw_prediction.label_ids:
+        #     output = self.tokenizer.batch_decode(entry, skip_special_tokens=True)
+        #     predictions.append([x.replace('<pad>', '').replace('</s>', '').strip() for x in output])
+        #
+        # predictions = list(chain(*predictions))
+        # print(predictions)
+        print("start decoding")
 
-        raw_prediction = trainer.predict(test_dataset=self.inputs["test"])
-        print("predictions: " + str(len(raw_prediction.predictions)))
-        print(raw_prediction.predictions)
-        print("label_ids: " + str(len(raw_prediction.label_ids)))
-        print(raw_prediction.label_ids)
-        print("predictions printed, next is decoding")
-        for entry in raw_prediction.label_ids:
-            output = self.tokenizer.batch_decode(entry, skip_special_tokens=True)
-            print(output)
+        val_loader = DataLoader(dataset=self.inputs["test"], batch_size=8, num_workers=0)
+        # Call validation function
+        prediction, target = validation(self.tokenizer, self.model, val_loader)
         print("finished decoding")
+        print("predictions:")
+        print(prediction)
+        print("target: ")
+        print(target)
+
+
+def validation(tokenizer, model, loader):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.eval()
+    predictions = []
+    targets = []
+    with torch.no_grad():
+        model.to(device)
+        for step, data in enumerate(loader, 0):
+            ids = data['input_ids'].to(device)
+            mask = data['attention_mask'].to(device)
+            y_id = data['labels'].to(device)
+            raw_prediction = model.generate(
+                input_ids=ids,
+                attention_mask=mask,
+                num_beams=2,
+                max_length=170,
+                repetition_penalty=2.5,
+                early_stopping=True,
+                length_penalty=1.0
+            )
+
+    # Decode y_id and prediction #
+    prediction = [tokenizer.decode(p, skip_special_tokens=True, clean_up_tokenization_spaces=False) for p in raw_prediction]
+    target = [tokenizer.decode(t, skip_special_tokens=True, clean_up_tokenization_spaces=False) for t in y_id]
+
+    predictions.extend(prediction)
+    targets.extend(target)
+    return predictions, targets
