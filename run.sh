@@ -1,1 +1,1 @@
-python3 main.py --experiment "amr_e2e_web_t5_small_train_predict.yml"
+python3 main.py --experiment "amr_nlg_t5_small.yml"
