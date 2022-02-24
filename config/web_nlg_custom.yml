@@ -7,8 +7,11 @@ NAME_VALIDATION_DATASET: dev
 NAME_TEST_DATASET: test
 
 PRE_PROCESS: custom
-PRE_PROCESS_METHOD: pre_process_web_nlg_dataset
+PRE_PROCESS_METHOD: pre_process_custom_dataset
 
 FLATTEN: True
 INPUT_IDS: input_text
 LABELS: target_text
+
+TRIM_TRAIN: 3
+TRIM_TEST: 7

@@ -1,16 +1,13 @@
 from datetime import datetime
 from os.path import join
 
-import torch
-from transformers import T5Tokenizer, T5ForConditionalGeneration
+from transformers import T5Tokenizer, T5ForConditionalGeneration, TrainingArguments, Trainer, IntervalStrategy
 
 import src.core.pre_process as pre_process
-from src.core.inference import make_predictions, make_prediction_talk
 from src.core.t5_promt_tuning import T5PromptTuningLM
 from src.core.config import load_config_from_yaml
-from src.core.persistance import save_soft_prompt, load_model, save_state_dict, validate_path, save_predictions, \
+from src.core.persistance import load_model, save_state_dict, validate_path, save_predictions, \
     load_state_dict
-from src.core.train import train
 
 
 class Experiment:
@@ -41,28 +38,37 @@ class Experiment:
         self.inputs = {}
         self.starting_timestamp = datetime.timestamp(datetime.now())
 
-        self.training_args = {
-            'batch_size': self.config["BATCH_SIZE"],
-            'eval_batch_size': self.config["EVAL_BATCH_SIZE"],
-            'eval_accumulation_steps': self.config["EVAL_ACCUMULATION_STEPS"],
-            'eval_steps': self.config["EVAL_STEPS"],
-            'greater_is_better': self.config["GREATER_IS_BETTER"],
-            'learning_rate': self.config["LEARNING_RATE"],
-            'load_best_model_at_end': self.config["LOAD_BEST_MODEL_AT_END"],
-            'logging_first_step': self.config["LOGGING_FIRST_STEP"],
-            'logging_steps': self.config["LOGGING_STEPS"],
-            'metric_for_best_model': self.config["METRIC_FOR_BEST_MODEL"],
-            'num_train_epochs': self.config["NUM_TRAIN_EPOCHS"],
-            'output_dir':  join("runs", self.config["OUTPUT_DIR"]),
-            'prediction_loss_only': self.config["PREDICTION_LOSS_ONLY"],
-            'remove_unused_columns': self.config["REMOVE_UNUSED_COLUMNS"],
-            'save_model': self.config["SAVE_MODEL"],
-            'save_steps': self.config["SAVE_STEPS"],
-            'save_total_limit': self.config["SAVE_TOTAL_LIMIT"],
-            'wandb_run_name': self.config["WANDB_RUN_NAME"],
-            'starting_timestamp': str(self.starting_timestamp),
-            'train_with_embeddings': self.config["PROMPT_TUNING"]
-        }
+        self.trainer_args = self._load_trainer_args()
+
+    def run(self):
+        self.tokenizer = T5Tokenizer.from_pretrained(self.config["PRE_TRAINED_MODEL"])
+        self._load_model()
+
+        if self.config["TRAIN"]:
+            self.inputs['train'] = self._prepare_inputs(self.data['train'])
+            self.inputs['validation'] = self._prepare_inputs(self.data['validation'])
+        if self.config["EVALUATE"]:
+            self.inputs['test'] = self._prepare_inputs(self.data['test'])
+
+        if self.config["TRAIN"]:
+            self._train()
+
+            if self.config["SAVE_MODEL"]:
+                path = join("runs", self.config["OUTPUT_DIR"])
+                path = validate_path(path)
+                path = validate_path(join(path, "models"))
+                save_state_dict(
+                    self.model,
+                    path,
+                    "model_state_dict_started_" + str(self.starting_timestamp)
+                )
+
+        if self.config["EVALUATE"]:
+            self._predict()
+            path = join("runs", self.config["OUTPUT_DIR"])
+            path = validate_path(path)
+            path = validate_path(join(path, "predictions"))
+            save_predictions(self.predictions, path, "predictions_" + str(self.starting_timestamp))
 
     def _load_dataset(self, dataset):
         dataset_config = load_config_from_yaml(dataset["DATASET_CONFIG"])
@@ -72,48 +78,29 @@ class Experiment:
         else:
             self.source_datasets[dataset["KEY"]] = pre_process.pre_process_huggingface_dataset(dataset_config)
 
-    def run(self):
-        self.tokenizer = T5Tokenizer.from_pretrained(self.config["PRE_TRAINED_MODEL"])
-        self._set_model()
+    def _load_trainer_args(self):
+        return TrainingArguments(
+            eval_accumulation_steps=self.config["EVAL_ACCUMULATION_STEPS"],
+            eval_steps=self.config["EVAL_STEPS"],
+            evaluation_strategy=IntervalStrategy.STEPS,
+            greater_is_better=self.config["GREATER_IS_BETTER"],
+            learning_rate=self.config["LEARNING_RATE"],
+            load_best_model_at_end=self.config["LOAD_BEST_MODEL_AT_END"],
+            logging_first_step=self.config["LOGGING_FIRST_STEP"],
+            logging_steps=self.config["LOGGING_STEPS"],
+            metric_for_best_model=self.config["METRIC_FOR_BEST_MODEL"],
+            num_train_epochs=self.config["NUM_TRAIN_EPOCHS"],
+            output_dir=join("runs", self.config["OUTPUT_DIR"], "logs"),
+            per_device_train_batch_size=self.config["BATCH_SIZE"],
+            per_device_eval_batch_size=self.config["EVAL_BATCH_SIZE"],
+            prediction_loss_only=self.config["PREDICTION_LOSS_ONLY"],
+            remove_unused_columns=self.config["REMOVE_UNUSED_COLUMNS"],
+            run_name=self.config["WANDB_RUN_NAME"],
+            save_steps=self.config["SAVE_STEPS"],
+            save_total_limit=self.config["SAVE_TOTAL_LIMIT"]
+        )
 
-        if self.config["TRAIN"]:
-            self.inputs['train'] = self._prepare_inputs(self.data['train'])
-            self.inputs['validation'] = self._prepare_inputs(self.data['validation'])
-        if self.config["EVALUATE"]:
-            self.inputs['test'] = self._prepare_inputs(self.data['test'])
-        self._to_device()
-
-        if self.config["TRAIN"]:
-            train(self.training_args, self.model, self.inputs, self.config["TRAIN_MODE"])
-
-            if self.config["SAVE_MODEL"]:
-                validate_path(self.training_args["output_dir"])
-                validate_path(join(self.training_args["output_dir"], "models"))
-                save_state_dict(
-                    self.model,
-                    join(self.training_args["output_dir"], "models"),
-                    "model_state_dict_started_" + str(self.starting_timestamp)
-                )
-
-            if self.config["SAVE_SOFT_PROMPTS"]:
-                validate_path(self.training_args["output_dir"])
-                validate_path(join(self.training_args["output_dir"], "models"))
-                save_soft_prompt(
-                    self.model,
-                    join(self.training_args["output_dir"], "models"),
-                    self.training_args["num_train_epochs"],
-                    self.config["PRE_TRAINED_MODEL"],
-                    self.number_prompt_tokens
-                )
-
-        if self.config["EVALUATE"]:
-            self.predictions = make_prediction_talk(self.model, self.tokenizer)
-            self.predictions = make_predictions(self.model, self.inputs['test'], self.tokenizer)
-            validate_path(self.training_args["output_dir"])
-            path = validate_path(join(self.training_args["output_dir"], "predictions"))
-            save_predictions(self.predictions, path, "predictions_" + str(self.starting_timestamp))
-
-    def _set_model(self):
+    def _load_model(self):
         if self.config["PROMPT_TUNING"]:
             self.model = T5PromptTuningLM.from_pretrained(
                 self.config["PRE_TRAINED_MODEL"],
@@ -133,7 +120,7 @@ class Experiment:
 
     def _prepare_inputs(self, dataset):
         # train_dataset.shard(num_shards=4, index=0)
-        dataset = dataset.map(self._tokenize, batched=True, batch_size=self.training_args["batch_size"])
+        dataset = dataset.map(self._tokenize, batched=True, batch_size=self.config["BATCH_SIZE"])
 
         for feature in dataset.features:
             if feature not in ['input_ids', 'attention_mask', 'labels']:
@@ -145,7 +132,7 @@ class Experiment:
     def _tokenize(self, batch):
         inputs = []
         for item in batch['input_ids']:
-            inputs.append('Translate from Graph to Text: ' + item[0][0] + '</s>')
+            inputs.append('Translate from Graph to Text: ' + item)
 
         tokenized_input = self.tokenizer.batch_encode_plus(
             inputs, padding='max_length', max_length=500
@@ -153,11 +140,7 @@ class Experiment:
 
         labels = []
         for item in batch['labels']:
-            if len(item) > 0:
-                labels.append(item[0] + '</s>')
-            else:
-                labels.append('None')
-                self.count += 1
+            labels.append(item)
 
         tokenized_labels = self.tokenizer.batch_encode_plus(
             labels, padding='max_length', max_length=500
@@ -166,13 +149,28 @@ class Experiment:
 
         return tokenized_input
 
-    def _to_device(self):
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        print(device)
-        self.model.to(device)
-        # self.model = torch.nn.DataParallel(model, device_ids=config["GPUS"])
-        for item in self.inputs:
-            self.inputs[item]["input_ids"].to(device)
-            self.inputs[item]["attention_mask"].to(device)
-            self.inputs[item]["labels"].to(device)
-        torch.cuda.empty_cache()
+    def _train(self):
+        trainer = Trainer(
+            model=self.model,
+            args=self.trainer_args,
+            train_dataset=self.inputs["train"],
+            eval_dataset=self.inputs["validation"]
+        )
+        trainer.train()
+
+    def _predict(self):
+        trainer = Trainer(
+            model=self.model,
+            args=self.trainer_args
+        )
+
+        raw_prediction = trainer.predict(test_dataset=self.inputs["test"])
+        print("predictions: " + str(len(raw_prediction.predictions)))
+        print(raw_prediction.predictions)
+        print("label_ids: " + str(len(raw_prediction.label_ids)))
+        print(raw_prediction.label_ids)
+        print("predictions printed, next is decoding")
+        for entry in raw_prediction.label_ids:
+            output = self.tokenizer.batch_decode(entry, skip_special_tokens=True)
+            print(output)
+        print("finished decoding")
