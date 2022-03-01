@@ -42,6 +42,8 @@ class Experiment:
         self.inputs = {}
         self.starting_timestamp = datetime.timestamp(datetime.now())
 
+        if "wandb" == self.config["REPORT_TO"]:
+            wandb.init(project=self.config["WANDB_PROJECT"], entity=self.config["WANDB_ENTITY"])
         self.trainer_args = self._load_trainer_args()
 
     def run(self):
@@ -158,9 +160,6 @@ class Experiment:
         return tokenized_input
 
     def _train(self):
-        if "wandb" == self.config["REPORT_TO"]:
-            wandb.init(project=self.config["WANDB_PROJECT"], entity=self.config["WANDB_ENTITY"])
-
         trainer = Trainer(
             model=self.model,
             args=self.trainer_args,
