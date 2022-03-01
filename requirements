@@ -1,7 +1,7 @@
 filelock>=3.3.2
 numpy>=1.21.4
 tqdm>=4.62.3
-transformers>=4.12.3
+transformers~=4.16.2
 packaging>=21.2
 ipython>=7.29.0
 importlib_metadata>=4.8.1
@@ -17,7 +17,7 @@ joblib>=1.1.0
 sentencepiece>=0.1.95
 datasets>= 1.15.1
 sacrebleu>=2.0.0
-typing
+typing~=3.10.0.0
 pyarrow>=6.0.1
 pyyaml
 dill>=0.3.4
@@ -32,3 +32,5 @@ scikit-learn>=1.0.2
 scipy>=1.7.3
 tabulate>=0.8.9
 torch
+yaml~=0.2.5
+wandb

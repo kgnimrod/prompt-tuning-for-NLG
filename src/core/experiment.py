@@ -1,12 +1,13 @@
 from datetime import datetime
 from os.path import join
 
-import torch
 from torch.utils.data import DataLoader
+import wandb
 
 from transformers import T5Tokenizer, T5ForConditionalGeneration, TrainingArguments, Trainer, IntervalStrategy
 
 import src.core.pre_process as pre_process
+from src.core.evaluation import validation, compute_metrics
 from src.core.t5_promt_tuning import T5PromptTuningLM
 from src.core.config import load_config_from_yaml
 from src.core.persistance import load_model, save_state_dict, validate_path, save_predictions, \
@@ -94,11 +95,14 @@ class Experiment:
             logging_steps=self.config["LOGGING_STEPS"],
             metric_for_best_model=self.config["METRIC_FOR_BEST_MODEL"],
             num_train_epochs=self.config["NUM_TRAIN_EPOCHS"],
+            optim=self.config["OPTIMIZER"],
+            lr_scheduler_type=self.config["LR_SCHEDULER"],
             output_dir=join("runs", self.config["OUTPUT_DIR"], "logs"),
             per_device_train_batch_size=self.config["BATCH_SIZE"],
             per_device_eval_batch_size=self.config["EVAL_BATCH_SIZE"],
             prediction_loss_only=self.config["PREDICTION_LOSS_ONLY"],
             remove_unused_columns=self.config["REMOVE_UNUSED_COLUMNS"],
+            report_to=self.config["REPORT_TO"],
             run_name=self.config["WANDB_RUN_NAME"],
             save_steps=self.config["SAVE_STEPS"],
             save_total_limit=self.config["SAVE_TOTAL_LIMIT"]
@@ -154,33 +158,20 @@ class Experiment:
         return tokenized_input
 
     def _train(self):
+        if "wandb" == self.config["REPORT_TO"]:
+            wandb.init(project=self.config["WANDB_PROJECT"], entity=self.config["WANDB_ENTITY"])
+
         trainer = Trainer(
             model=self.model,
             args=self.trainer_args,
             train_dataset=self.inputs["train"],
-            eval_dataset=self.inputs["validation"]
+            eval_dataset=self.inputs["validation"],
+            compute_metrics=compute_metrics
         )
         trainer.train()
 
     def _predict(self):
-        # trainer = Trainer(
-        #     model=self.model,
-        #     args=self.trainer_args
-        # )
-        #
-        # raw_prediction = trainer.predict(test_dataset=self.inputs["test"])
-        # predictions = []
-        # print("predictions: " + str(len(raw_prediction.predictions)))
-        # print(raw_prediction.predictions)
-        # print("label_ids: " + str(len(raw_prediction.label_ids)))
-        # print(raw_prediction.label_ids)
-        # print("predictions printed, next is decoding")
-        # for entry in raw_prediction.label_ids:
-        #     output = self.tokenizer.batch_decode(entry, skip_special_tokens=True)
-        #     predictions.append([x.replace('<pad>', '').replace('</s>', '').strip() for x in output])
-        #
-        # predictions = list(chain(*predictions))
-        # print(predictions)
+
         print("start decoding")
 
         val_loader = DataLoader(dataset=self.inputs["test"], batch_size=8, num_workers=0)
@@ -191,33 +182,3 @@ class Experiment:
         print(prediction)
         print("target: ")
         print(target)
-
-
-def validation(tokenizer, model, loader):
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model.eval()
-    predictions = []
-    targets = []
-    with torch.no_grad():
-        model.to(device)
-        for step, data in enumerate(loader, 0):
-            ids = data['input_ids'].to(device)
-            mask = data['attention_mask'].to(device)
-            y_id = data['labels'].to(device)
-            raw_prediction = model.generate(
-                input_ids=ids,
-                attention_mask=mask,
-                num_beams=2,
-                max_length=170,
-                repetition_penalty=2.5,
-                early_stopping=True,
-                length_penalty=1.0
-            )
-
-    # Decode y_id and prediction #
-    prediction = [tokenizer.decode(p, skip_special_tokens=True, clean_up_tokenization_spaces=False) for p in raw_prediction]
-    target = [tokenizer.decode(t, skip_special_tokens=True, clean_up_tokenization_spaces=False) for t in y_id]
-
-    predictions.extend(prediction)
-    targets.extend(target)
-    return predictions, targets
