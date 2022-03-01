@@ -176,9 +176,10 @@ class Experiment:
 
         val_loader = DataLoader(dataset=self.inputs["test"], batch_size=8, num_workers=0)
         # Call validation function
-        prediction, target = validation(self.tokenizer, self.model, val_loader)
+        prediction, target, scores = validation(self.tokenizer, self.model, val_loader)
         print("finished decoding")
         print("predictions:")
         print(prediction)
         print("target: ")
         print(target)
+        print(scores)

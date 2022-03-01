@@ -24,6 +24,14 @@ def compute_metrics(eval_pred):
     }
 
 
+def compute_bertscore(predictions, labels):
+    metric = load_metric("bertscore")
+    metric.add_batch(predictions, labels)
+    bertscore = metric.compute()
+
+    return bertscore
+
+
 def validation(tokenizer, model, loader):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.eval()
@@ -55,4 +63,6 @@ def validation(tokenizer, model, loader):
 
             predictions.extend(prediction)
             targets.extend(target)
-    return predictions, targets
+
+    score = {"bertscore": compute_bertscore(predictions=predictions, labels=targets)}
+    return predictions, targets, score
