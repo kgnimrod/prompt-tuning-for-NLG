@@ -11,11 +11,15 @@ To run a container run the following command:
 docker container run --rm --volume="$(pwd):/opt/workspace" midl_nlg:test
 ```
 
-Next things to integrate:
-* evaluation
-* load model instead of create new one
+You can built an enroot image and run containers via enroot:
+```
+enroot create --name <midl_nlg_test> <name_of_your_eonroot_image.sqsh>
+enroot list -f
+enroot start --rw --mount .:/opt/workspace <midl_nlg_test>
+```
 
-To run experiments on the cluster:
-* The dockerfile needs the requirements file when image is build
-* The script file (final CMD command in docker file) needs to be created and fed to the container per volume
-
+Or manually run an experiment via python:
+```
+python main.py --experiment <name_of_experiment.yml>
+```
+The experiment-yaml-file is expected to be found in the experiments folder of this project.
