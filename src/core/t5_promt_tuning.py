@@ -59,9 +59,7 @@ class T5PromptTuning(T5ForConditionalGeneration):
 
     # this method appends the learned prompt embeddings to the input ids of the input before forward pass is calculated
     def _cat_learned_embedding_to_inp(self, input_ids):
-        # print("in t5_prompt_tuning" + str(input_ids.to_device()))
         inputs_embeds = self.get_input_embeddings()(input_ids)
-        #         inputs_embeds = self.transformer.wte(input_ids)
 
         if len(list(inputs_embeds.shape)) == 2:
             inputs_embeds = inputs_embeds.unsqueeze(0)
@@ -126,8 +124,6 @@ class T5PromptTuning(T5ForConditionalGeneration):
     ):
         if input_ids is not None:
             inputs_embeds = self._cat_learned_embedding_to_inp(input_ids).to(self.device)
-            # if decoder_input_ids is not None:
-            #     decoder_input_ids = self.embed_tokens(decoder_input_ids).to(self.device)
 
         if labels is not None:
             labels = self.extend_labels(labels).to(self.device)
@@ -145,44 +141,28 @@ class T5PromptTuning(T5ForConditionalGeneration):
             return self.encoder(inputs_embeds=inputs_embeds, return_dict=True)
 
         # for inference (i.e. generate) - build pipeline for generate function
-        if decoder_input_ids is not None:
-            return super().forward(
-                inputs_embeds=inputs_embeds,
-                decoder_input_ids=decoder_input_ids,
-                encoder_outputs=encoder_outputs,
-                use_cache=use_cache,
-                return_dict=return_dict,
-            )
+        # if decoder_input_ids is not None:
+        #     return super().forward(
+        #         attention_mask=attention_mask,
+        #         inputs_embeds=inputs_embeds,
+        #         decoder_input_ids=decoder_input_ids,
+        #         decoder_attention_mask=decoder_attention_mask,
+        #         encoder_outputs=encoder_outputs,
+        #         use_cache=use_cache,
+        #         return_dict=return_dict,
+        #     )
 
         # for training
         return super().forward(
             attention_mask=attention_mask,
             inputs_embeds=inputs_embeds,
             labels=labels,
+            decoder_input_ids=decoder_input_ids,
             decoder_attention_mask=decoder_attention_mask,
+            encoder_outputs=encoder_outputs,
             use_cache=use_cache,
             return_dict=return_dict,
-            encoder_outputs=encoder_outputs,
         )
-
-        # return super().forward(
-        #     input_ids=None,
-        #     attention_mask=attention_mask,
-        #     decoder_input_ids=decoder_input_ids,
-        #     decoder_attention_mask=decoder_attention_mask,
-        #     head_mask=head_mask,
-        #     decoder_head_mask=decoder_head_mask,
-        #     cross_attn_head_mask=cross_attn_head_mask,
-        #     encoder_outputs=encoder_outputs,
-        #     past_key_values=past_key_values,
-        #     inputs_embeds=inputs_embeds,
-        #     decoder_inputs_embeds=None,
-        #     labels=labels,
-        #     use_cache=use_cache,
-        #     output_attentions=output_attentions,
-        #     output_hidden_states=output_hidden_states,
-        #     return_dict=return_dict,
-        # )
 
 
 class T5PromptTuningLM(T5PromptTuning, T5ForConditionalGeneration):

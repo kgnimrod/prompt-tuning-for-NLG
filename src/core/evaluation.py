@@ -20,6 +20,9 @@ def predict(tokenizer, model, loader, dataset):
                 "attention_mask": mask,
                 "num_beams": 2,
                 "max_length": 500,
+                "bos_token_id": 0,
+                "pad_token_id": 0,
+                "eos_token_id": 1,
                 "repetition_penalty": 2.5,
                 "early_stopping": True,
                 "length_penalty": 1.0
@@ -70,7 +73,7 @@ def compute_scores(predictions, targets):
         "bertscore_recall": bertscore["means"]["recall"],
         "bertscore_f1": bertscore["means"]["f1"],
         "bleurt_f1": bleurt["means"]["f1"],
-        "meteor": meteor,
+        "meteor": meteor["meteor"],
         # "ter": ter["score"],
         "rougeL_f1": rouge["means"]["f1"],
     }

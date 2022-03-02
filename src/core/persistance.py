@@ -71,9 +71,11 @@ def save_scores(scores, path, prefix=''):
     path = validate_path(path)
 
     df = pd.DataFrame(scores["means"])
+    df.head()
     df.to_csv(join(path, prefix, "means.csv"))
 
     for key in scores:
-        print(scores["key"])
+        print(scores[key])
         df = pd.DataFrame(scores[key])
+        df.head()
         df.to_csv(join(path, prefix, key + "_.csv"))
