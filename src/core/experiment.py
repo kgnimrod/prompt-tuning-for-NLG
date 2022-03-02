@@ -7,11 +7,11 @@ import wandb
 from transformers import T5Tokenizer, T5ForConditionalGeneration, TrainingArguments, Trainer, IntervalStrategy
 
 import src.core.pre_process as pre_process
-from src.core.evaluation import validation, compute_metrics
+from src.core.evaluation import predict, compute_scores
 from src.core.t5_promt_tuning import T5PromptTuningLM
 from src.core.config import load_config_from_yaml
 from src.core.persistance import load_model, save_state_dict, validate_path, save_predictions, \
-    load_state_dict
+    load_state_dict, save_scores
 
 
 class Experiment:
@@ -39,12 +39,15 @@ class Experiment:
         self.tokenizer = None
         self.model = None
         self.predictions = None
+        self.scores = None
         self.inputs = {}
         self.starting_timestamp = datetime.timestamp(datetime.now())
 
         if "wandb" == self.config["REPORT_TO"]:
             wandb.init(project=self.config["WANDB_PROJECT"], entity=self.config["WANDB_ENTITY"])
         self.trainer_args = self._load_trainer_args()
+
+        self._validate_paths()
 
     def run(self):
         self.tokenizer = T5Tokenizer.from_pretrained(self.config["PRE_TRAINED_MODEL"])
@@ -53,28 +56,27 @@ class Experiment:
         if self.config["TRAIN"]:
             self.inputs['train'] = self._prepare_inputs(self.data['train'])
             self.inputs['validation'] = self._prepare_inputs(self.data['validation'])
+
+            # self._train()
+            #
+            # if self.config["SAVE_MODEL"]:
+            #     path = join("runs", self.config["OUTPUT_DIR"], "models")
+            #     save_state_dict(
+            #         self.model,
+            #         path,
+            #         "model_state_dict_started_" + str(self.starting_timestamp)
+            #     )
+
         if self.config["EVALUATE"]:
             self.inputs['test'] = self._prepare_inputs(self.data['test'])
 
-        if self.config["TRAIN"]:
-            self._train()
-
-            if self.config["SAVE_MODEL"]:
-                path = join("runs", self.config["OUTPUT_DIR"])
-                path = validate_path(path)
-                path = validate_path(join(path, "models"))
-                save_state_dict(
-                    self.model,
-                    path,
-                    "model_state_dict_started_" + str(self.starting_timestamp)
-                )
-
-        if self.config["EVALUATE"]:
             self._predict()
-            path = join("runs", self.config["OUTPUT_DIR"])
-            path = validate_path(path)
-            path = validate_path(join(path, "predictions"))
-            save_predictions(self.predictions, path, "predictions_" + str(self.starting_timestamp))
+            self._evaluate()
+            path = join("runs", self.config["OUTPUT_DIR"], "predictions")
+            save_predictions(self.predictions["predictions"], path, "predictions_" + str(self.starting_timestamp))
+            path = join("runs", self.config["OUTPUT_DIR"], "scores")
+            save_scores(self.scores, path, "scores_" + str(self.starting_timestamp))
+
 
     def _load_dataset(self, dataset):
         dataset_config = load_config_from_yaml(dataset["DATASET_CONFIG"])
@@ -89,7 +91,7 @@ class Experiment:
         return TrainingArguments(
             eval_accumulation_steps=self.config["EVAL_ACCUMULATION_STEPS"],
             eval_steps=self.config["EVAL_STEPS"],
-            evaluation_strategy=IntervalStrategy.STEPS,
+            evaluation_strategy=IntervalStrategy.EPOCH,
             greater_is_better=self.config["GREATER_IS_BETTER"],
             learning_rate=self.config["LEARNING_RATE"],
             load_best_model_at_end=self.config["LOAD_BEST_MODEL_AT_END"],
@@ -107,6 +109,7 @@ class Experiment:
             report_to=self.config["REPORT_TO"],
             run_name=self.config["WANDB_RUN_NAME"],
             save_steps=self.config["SAVE_STEPS"],
+            save_strategy=IntervalStrategy.EPOCH,
             save_total_limit=self.config["SAVE_TOTAL_LIMIT"]
         )
 
@@ -165,20 +168,23 @@ class Experiment:
             args=self.trainer_args,
             train_dataset=self.inputs["train"],
             eval_dataset=self.inputs["validation"],
-            compute_metrics=compute_metrics
+            # compute_metrics=compute_metrics
         )
         trainer.train()
 
     def _predict(self):
-
         print("start decoding")
-
         val_loader = DataLoader(dataset=self.inputs["test"], batch_size=8, num_workers=0)
-        # Call validation function
-        prediction, target, scores = validation(self.tokenizer, self.model, val_loader)
+        self.predictions = predict(self.tokenizer, self.model, val_loader)
         print("finished decoding")
-        print("predictions:")
-        print(prediction)
-        print("target: ")
-        print(target)
-        print(scores)
+
+    def _evaluate(self):
+        self.scores = compute_scores(self.predictions["predictions"], self.predictions["targets"])
+
+    def _validate_paths(self):
+        path = validate_path(join("runs"))
+        path = validate_path(join(path, self.config["OUTPUT_DIR"]))
+        validate_path(join(path, "models"))
+        validate_path(join(path, "logs"))
+        validate_path(join(path, "predictions"))
+        validate_path(join(path, "scores"))

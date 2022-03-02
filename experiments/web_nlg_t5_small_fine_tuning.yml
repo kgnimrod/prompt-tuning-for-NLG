@@ -1,11 +1,11 @@
 DATASETS:
   -
-    KEY: amr_nlg
-    DATASET_CONFIG: config/amr_nlg.yml
+    KEY: web_nlg
+    DATASET_CONFIG: config/web_nlg.yml
 
 PRE_TRAINED_MODEL: t5-small
 LOAD_MODEL: False
-PROMPT_TUNING: True
+PROMPT_TUNING: False
 
 SAMPLE: False
 SAMPLE_SIZE:
@@ -21,28 +21,27 @@ EVALUATE: True
 BATCH_SIZE: 8
 EVAL_BATCH_SIZE: 8
 EVAL_ACCUMULATION_STEPS: 1
-EVAL_STEPS: 10
+EVAL_STEPS: 1000
 GREATER_IS_BETTER: False
-LEARNING_RATE: 0.3
+LEARNING_RATE: 0.001
 LOAD_BEST_MODEL_AT_END: True
 LOGGING_FIRST_STEP: False
 LOGGING_STEPS: 10
 METRIC_FOR_BEST_MODEL: loss
 NUM_TRAIN_EPOCHS: 10
 OPTIMIZER: adafactor
-LR_SCHEDULER: constant
+LR_SCHEDULER: linear
 PREDICTION_LOSS_ONLY: True
 REMOVE_UNUSED_COLUMNS: True
-REPORT_TO: wandb
+REPORT_TO: None
 SAVE_STEPS: 1000
-SAVE_TOTAL_LIMIT: 1
-WANDB_RUN_NAME: amr_nlg_t5_small
+SAVE_TOTAL_LIMIT: 3
+WANDB_RUN_NAME: web_nlg_t5_small_fine_tuning
 
-OUTPUT_DIR: amr_nlg_t5_small
-INPUT_DIR: runs/amr_nlg_t5_small/models
+OUTPUT_DIR: web_nlg_t5_small_fine_tuning
+INPUT_DIR: runs/web_nlg_t5_small_fine_tuning/models
 
 SAVE_MODEL: True
-SAVE_SOFT_PROMPTS: True
 
-WANDB_PROJECT: midl_nlg
-WANDB_ENTITY: tp-n-q-vdnw
+WANDB_PROJECT:
+WANDB_ENTITY:

@@ -3,36 +3,7 @@ import torch
 from datasets import load_metric
 
 
-def compute_metrics(eval_pred):
-    metric1 = load_metric("precision")
-    metric2 = load_metric("recall")
-    metric3 = load_metric("bleurt")
-    metric4 = load_metric("bertscore")
-
-    logits, labels = eval_pred
-    predictions = np.argmax(logits, axis=-1)
-    precision = metric1.compute(predictions=predictions, references=labels)["precision"]
-    recall = metric2.compute(predictions=predictions, references=labels)["recall"]
-    bleurt = metric3.compute(predictions=predictions, references=labels)["bleurt"]
-    bertscore = metric4.compute(predictions=predictions, references=labels)["bertscore"]
-
-    return {
-        "precision": precision,
-        "recall": recall,
-        "bleurt": bleurt,
-        "bertscore": bertscore
-    }
-
-
-def compute_bertscore(predictions, labels):
-    metric = load_metric("bertscore")
-    metric.add_batch(predictions, labels)
-    bertscore = metric.compute()
-
-    return bertscore
-
-
-def validation(tokenizer, model, loader):
+def predict(tokenizer, model, loader):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.eval()
     predictions = []
@@ -63,6 +34,67 @@ def validation(tokenizer, model, loader):
 
             predictions.extend(prediction)
             targets.extend(target)
+    return {"predictions": predictions, "targets": targets}
 
-    score = {"bertscore": compute_bertscore(predictions=predictions, labels=targets)}
-    return predictions, targets, score
+
+def compute_scores(predictions, targets):
+    print(len(predictions))
+    print(len(targets))
+
+    rouge = _compute_rouge_l(predictions=predictions, targets=targets)
+    # ter = compute_score(predictions=predictions, labels=targets, name="ter")
+    bertscore = _compute_bertscore(predictions=predictions, targets=targets)
+    bleurt = _compute_bleurt(predictions=predictions, targets=targets)
+    meteor = compute_score(predictions=predictions, labels=targets, name="meteor")
+
+    scores = {
+        "bertscore": bertscore["scores"],
+        "bleurt": bleurt["scores"],
+        "rougeL": rouge["scores"]
+    }
+
+    means = {
+        "bertscore_precision": bertscore["means"]["precision"],
+        "bertscore_recall": bertscore["means"]["recall"],
+        "bertscore_f1": bertscore["means"]["f1"],
+        "bleurt_f1": bleurt["means"]["f1"],
+        "meteor": meteor,
+        # "ter": ter["score"],
+        "rougeL_f1": rouge["means"]["f1"],
+    }
+
+    return {"scores": scores, "means": means}
+
+
+def compute_score(predictions, labels, name, checkpoint=None, **kwargs):
+    metric = load_metric(name, checkpoint)
+    metric.add_batch(predictions=predictions, references=labels)
+    score = metric.compute(**kwargs)
+    return score
+
+
+def _compute_bertscore(predictions, targets):
+    scores = compute_score(predictions=predictions, labels=targets, name="bertscore", lang="en")
+    mean = {
+        "precision": np.mean(np.array(scores["precision"])),
+        "recall": np.mean(np.array(scores["recall"])),
+        "f1": np.mean(np.array(scores["f1"]))
+    }
+    return {"scores": scores, "means": mean}
+
+
+def _compute_bleurt(predictions, targets):
+    scores = compute_score(predictions=predictions, labels=targets, name="bleurt", checkpoint="bleurt-large-512")
+    mean = {
+        "f1": np.mean(np.array(scores["scores"]))
+    }
+    return {"scores": scores, "means": mean}
+
+
+def _compute_rouge_l(predictions, targets):
+    scores = compute_score(predictions=predictions, labels=targets, name="rouge")
+    print(scores)
+    mean = {
+        "f1": np.mean(np.array(scores["rougeL"].mid.fmeasure))
+    }
+    return {"scores": scores["rougeL"], "means": mean}
