@@ -57,15 +57,15 @@ class Experiment:
             self.inputs['train'] = self._prepare_inputs(self.data['train'])
             self.inputs['validation'] = self._prepare_inputs(self.data['validation'])
 
-            # self._train()
-            #
-            # if self.config["SAVE_MODEL"]:
-            #     path = join("runs", self.config["OUTPUT_DIR"], "models")
-            #     save_state_dict(
-            #         self.model,
-            #         path,
-            #         "model_state_dict_started_" + str(self.starting_timestamp)
-            #     )
+            self._train()
+
+            if self.config["SAVE_MODEL"]:
+                path = join("runs", self.config["OUTPUT_DIR"], "models")
+                save_state_dict(
+                    self.model,
+                    path,
+                    "model_state_dict_started_" + str(self.starting_timestamp)
+                )
 
         if self.config["EVALUATE"]:
             self.inputs['test'] = self._prepare_inputs(self.data['test'])
