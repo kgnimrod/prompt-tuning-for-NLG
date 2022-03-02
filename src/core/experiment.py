@@ -18,9 +18,10 @@ class Experiment:
     def __init__(self, config):
         self.count = 0
         self.config = config
-        self.number_prompt_tokens = self.config["NUMBER_PROMPT_TOKENS"]
-        self.random_range = self.config["RANDOM_RANGE"]
-        self.init_from_vocab = self.config["INIT_FROM_VOCAB"]
+        if self.config["PROMPT_TUNING"]:
+            self.number_prompt_tokens = self.config["NUMBER_PROMPT_TOKENS"]
+            self.random_range = self.config["RANDOM_RANGE"]
+            self.init_from_vocab = self.config["INIT_FROM_VOCAB"]
 
         datasets = self.config["DATASETS"]
         self.source_datasets = {}
@@ -41,13 +42,14 @@ class Experiment:
         self.predictions = None
         self.scores = None
         self.inputs = {}
-        self.starting_timestamp = datetime.timestamp(datetime.now())
+        self.starting_time = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
 
         if "wandb" == self.config["REPORT_TO"]:
-            wandb.init(project=self.config["WANDB_PROJECT"], entity=self.config["WANDB_ENTITY"])
+            wandb_config = load_config_from_yaml(self.config["WANDB_CONFIG"])
+            wandb.init(project=wandb_config["WANDB_PROJECT"], entity=wandb_config["WANDB_ENTITY"])
         self.trainer_args = self._load_trainer_args()
 
-        self._validate_paths()
+        self.path = self._validate_paths()
 
     def run(self):
         self.tokenizer = T5Tokenizer.from_pretrained(self.config["PRE_TRAINED_MODEL"])
@@ -60,23 +62,21 @@ class Experiment:
             self._train()
 
             if self.config["SAVE_MODEL"]:
-                path = join("runs", self.config["OUTPUT_DIR"], "models")
                 save_state_dict(
                     self.model,
-                    path,
-                    "model_state_dict_started_" + str(self.starting_timestamp)
+                    join(self.path, "models")
                 )
 
         if self.config["EVALUATE"]:
             self.inputs['test'] = self._prepare_inputs(self.data['test'])
 
             self._predict()
+            save_predictions(
+                self.predictions["predictions"],
+                join(self.path, "predictions")
+            )
             self._evaluate()
-            path = join("runs", self.config["OUTPUT_DIR"], "predictions")
-            save_predictions(self.predictions["predictions"], path, "predictions_" + str(self.starting_timestamp))
-            path = join("runs", self.config["OUTPUT_DIR"], "scores")
-            save_scores(self.scores, path, "scores_" + str(self.starting_timestamp))
-
+            save_scores(self.scores, join(self.path, "scores"))
 
     def _load_dataset(self, dataset):
         dataset_config = load_config_from_yaml(dataset["DATASET_CONFIG"])
@@ -89,8 +89,6 @@ class Experiment:
 
     def _load_trainer_args(self):
         return TrainingArguments(
-            eval_accumulation_steps=self.config["EVAL_ACCUMULATION_STEPS"],
-            eval_steps=self.config["EVAL_STEPS"],
             evaluation_strategy=IntervalStrategy.EPOCH,
             greater_is_better=self.config["GREATER_IS_BETTER"],
             learning_rate=self.config["LEARNING_RATE"],
@@ -108,7 +106,6 @@ class Experiment:
             remove_unused_columns=self.config["REMOVE_UNUSED_COLUMNS"],
             report_to=self.config["REPORT_TO"],
             run_name=self.config["WANDB_RUN_NAME"],
-            save_steps=self.config["SAVE_STEPS"],
             save_strategy=IntervalStrategy.EPOCH,
             save_total_limit=self.config["SAVE_TOTAL_LIMIT"]
         )
@@ -175,7 +172,7 @@ class Experiment:
     def _predict(self):
         print("start decoding")
         val_loader = DataLoader(dataset=self.inputs["test"], batch_size=8, num_workers=0)
-        self.predictions = predict(self.tokenizer, self.model, val_loader)
+        self.predictions = predict(self.tokenizer, self.model, val_loader, self.inputs["test"])
         print("finished decoding")
 
     def _evaluate(self):
@@ -183,8 +180,9 @@ class Experiment:
 
     def _validate_paths(self):
         path = validate_path(join("runs"))
-        path = validate_path(join(path, self.config["OUTPUT_DIR"]))
+        path = validate_path(join(path, self.starting_time + "_" + self.config["OUTPUT_DIR"]))
         validate_path(join(path, "models"))
         validate_path(join(path, "logs"))
         validate_path(join(path, "predictions"))
         validate_path(join(path, "scores"))
+        return path

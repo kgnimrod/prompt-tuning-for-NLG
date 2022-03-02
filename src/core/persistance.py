@@ -70,9 +70,10 @@ def save_predictions(predictions, path, filename="predictions.csv"):
 def save_scores(scores, path, prefix=''):
     path = validate_path(path)
 
-    for key in scores:
-        df = pd.DataFrame(scores[key])
-        df.to_csv(join(path, prefix, key + "_.csv"))
-
     df = pd.DataFrame(scores["means"])
     df.to_csv(join(path, prefix, "means.csv"))
+
+    for key in scores:
+        print(scores["key"])
+        df = pd.DataFrame(scores[key])
+        df.to_csv(join(path, prefix, key + "_.csv"))

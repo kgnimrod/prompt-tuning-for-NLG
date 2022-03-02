@@ -3,7 +3,7 @@ import torch
 from datasets import load_metric
 
 
-def predict(tokenizer, model, loader):
+def predict(tokenizer, model, loader, dataset):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.eval()
     predictions = []
@@ -14,23 +14,35 @@ def predict(tokenizer, model, loader):
             ids = data['input_ids'].to(device)
             mask = data['attention_mask'].to(device)
             y_id = data['labels'].to(device)
-            raw_prediction = model.generate(
-                input_ids=ids,
-                attention_mask=mask,
-                num_beams=2,
-                max_length=170,
-                repetition_penalty=2.5,
-                early_stopping=True,
-                length_penalty=1.0
-            )
+
+            args = {
+                "input_ids": ids,
+                "attention_mask": mask,
+                "num_beams": 2,
+                "max_length": 500,
+                "repetition_penalty": 2.5,
+                "early_stopping": True,
+                "length_penalty": 1.0
+            }
+
+            raw_prediction = model.generate(**args)
+
+            # inputs_embeds=embeds,
+            # max_length=400,
+            # bos_token_id=0,
+            # pad_token_id=0,
+            # eos_token_id=1,
+            # use_cache=True,
+            # attention_mask=model.extend_attention_mask(inputs_test[i]['attention_mask']),
+            # decoder_input_ids=inputs_test[i]['input_ids']
 
             # Decode y_id and prediction #
             prediction = [
-                tokenizer.decode(
+                tokenizer.batch_decode(
                     p, skip_special_tokens=True, clean_up_tokenization_spaces=False
                 ) for p in raw_prediction
             ]
-            target = [tokenizer.decode(t, skip_special_tokens=True, clean_up_tokenization_spaces=False) for t in y_id]
+            target = [tokenizer.batch_decode(t, skip_special_tokens=True, clean_up_tokenization_spaces=False) for t in y_id]
 
             predictions.extend(prediction)
             targets.extend(target)
