@@ -16,8 +16,9 @@ from src.core.persistance import load_model, save_state_dict, validate_path, sav
 
 class Experiment:
     def __init__(self, config):
-        self.count = 0
         self.config = config
+        self.starting_time = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+        self.path = self._validate_paths()
         if self.config["PROMPT_TUNING"]:
             self.number_prompt_tokens = self.config["NUMBER_PROMPT_TOKENS"]
             self.random_range = self.config["RANDOM_RANGE"]
@@ -42,14 +43,11 @@ class Experiment:
         self.predictions = None
         self.scores = None
         self.inputs = {}
-        self.starting_time = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
 
         if "wandb" == self.config["REPORT_TO"]:
             wandb_config = load_config_from_yaml(self.config["WANDB_CONFIG"])
             wandb.init(project=wandb_config["WANDB_PROJECT"], entity=wandb_config["WANDB_ENTITY"])
         self.trainer_args = self._load_trainer_args()
-
-        self.path = self._validate_paths()
 
     def run(self):
         self.tokenizer = T5Tokenizer.from_pretrained(self.config["PRE_TRAINED_MODEL"])
@@ -99,7 +97,7 @@ class Experiment:
             num_train_epochs=self.config["NUM_TRAIN_EPOCHS"],
             optim=self.config["OPTIMIZER"],
             lr_scheduler_type=self.config["LR_SCHEDULER"],
-            output_dir=join("runs", self.config["OUTPUT_DIR"], "logs"),
+            output_dir=join(self.path, "logs"),
             per_device_train_batch_size=self.config["BATCH_SIZE"],
             per_device_eval_batch_size=self.config["EVAL_BATCH_SIZE"],
             prediction_loss_only=self.config["PREDICTION_LOSS_ONLY"],
@@ -124,7 +122,7 @@ class Experiment:
 
         if self.config["LOAD_MODEL"]:
             if self.config['TRAIN']:
-                self.model = load_model(join(self.config["INPUT_DIR"], self.config["INPUT_FILE"]))
+                self.model = load_model(self.config["INPUT_DIR"])
             else:
                 load_state_dict(self.model, self.config["INPUT_DIR"], self.config["INPUT_FILE"])
 

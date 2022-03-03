@@ -16,13 +16,12 @@ def predict(tokenizer, model, loader, is_prompt_tuning=None):
             y_id = data['labels'].to(device)
 
             args = {
-                "input_ids": ids,
                 "attention_mask": mask,
                 "num_beams": 2,
-                "max_length": 500,
-                "bos_token_id": 0,
-                "pad_token_id": 0,
-                "eos_token_id": 1,
+                "max_length": 550,
+                # "bos_token_id": 0,
+                # "pad_token_id": 0,
+                # "eos_token_id": 1,
                 "repetition_penalty": 2.5,
                 "early_stopping": True,
                 "length_penalty": 1.0
@@ -32,6 +31,8 @@ def predict(tokenizer, model, loader, is_prompt_tuning=None):
                 args["inputs_embeds"] = model.extend_inputs(ids).to(device)
                 args["attention_mask"] = model.extend_attention_mask(mask).to(device)
                 args["decoder_input_ids"] = ids
+            else:
+                args["input_ids"] = ids
 
             raw_prediction = model.generate(**args)
 
@@ -46,11 +47,11 @@ def predict(tokenizer, model, loader, is_prompt_tuning=None):
 
             # Decode y_id and prediction #
             prediction = [
-                tokenizer.batch_decode(
+                tokenizer.decode(
                     p, skip_special_tokens=True, clean_up_tokenization_spaces=False
                 ) for p in raw_prediction
             ]
-            target = [tokenizer.batch_decode(t, skip_special_tokens=True, clean_up_tokenization_spaces=False) for t in y_id]
+            target = [tokenizer.decode(t, skip_special_tokens=True, clean_up_tokenization_spaces=False) for t in y_id]
 
             predictions.extend(prediction)
             targets.extend(target)

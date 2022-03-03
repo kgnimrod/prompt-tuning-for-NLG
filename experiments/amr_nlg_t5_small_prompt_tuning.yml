@@ -32,10 +32,11 @@ OPTIMIZER: adafactor
 LR_SCHEDULER: constant
 PREDICTION_LOSS_ONLY: True
 REMOVE_UNUSED_COLUMNS: True
-REPORT_TO: wandb
+REPORT_TO: none
 SAVE_TOTAL_LIMIT: 3
 WANDB_RUN_NAME: amr_nlg_t5_small_prompt_tuning
 
 OUTPUT_DIR: amr_nlg_t5_small_prompt_tuning
-INPUT_DIR:
+INPUT_DIR: runs/2022_03_03_01_06_45_amr_nlg_t5_small_prompt_tuning/models
+INPUT_FILE: model_state_dict.model
 WANDB_CONFIG: config/wandb.yml
