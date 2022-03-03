@@ -5,7 +5,7 @@ DATASETS:
 
 PRE_TRAINED_MODEL: t5-small
 PROMPT_TUNING: True
-LOAD_MODEL: False
+LOAD_MODEL: True
 SAVE_MODEL: True
 
 SAMPLE: False
@@ -16,7 +16,7 @@ NUMBER_PROMPT_TOKENS: 50
 RANDOM_RANGE: 0.5
 INIT_FROM_VOCAB: True
 
-TRAIN: True
+TRAIN: False
 EVALUATE: True
 
 BATCH_SIZE: 8
@@ -37,6 +37,6 @@ SAVE_TOTAL_LIMIT: 3
 WANDB_RUN_NAME: amr_nlg_t5_small_prompt_tuning
 
 OUTPUT_DIR: amr_nlg_t5_small_prompt_tuning
-INPUT_DIR: runs/2022_03_03_01_06_45_amr_nlg_t5_small_prompt_tuning/models
+INPUT_DIR: runs/2022_03_03_02_18_22_amr_nlg_t5_small_prompt_tuning/models
 INPUT_FILE: model_state_dict.model
 WANDB_CONFIG: config/wandb.yml

@@ -75,8 +75,9 @@ def save_scores(scores, path, prefix=''):
     df.head()
     df.to_csv(join(path, prefix, "means.csv"))
 
+    print(scores["scores"])
     for key in scores["scores"]:
-        print(scores[key])
+        print(scores["scores"][key])
         df = pd.DataFrame.from_dict(scores[key])
         df.head()
         df.to_csv(join(path, prefix, key + "_.csv"))
