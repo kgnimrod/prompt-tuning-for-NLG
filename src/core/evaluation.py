@@ -19,9 +19,9 @@ def predict(tokenizer, model, loader, is_prompt_tuning=None):
                 "attention_mask": mask,
                 "num_beams": 2,
                 "max_length": 550,
-                # "bos_token_id": 0,
-                # "pad_token_id": 0,
-                # "eos_token_id": 1,
+                "bos_token_id": 0,
+                "pad_token_id": 0,
+                "eos_token_id": 1,
                 "repetition_penalty": 2.5,
                 "early_stopping": True,
                 "length_penalty": 1.0
