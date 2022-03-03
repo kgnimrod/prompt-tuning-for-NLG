@@ -4,8 +4,8 @@ from datasets import load_metric
 
 
 def predict(tokenizer, model, loader, is_prompt_tuning=None):
-    is_prompt_tuning = False
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    is_prompt_tuning = False
     model.eval()
     predictions = []
     targets = []

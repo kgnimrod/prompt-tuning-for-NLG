@@ -78,6 +78,6 @@ def save_scores(scores, path, prefix=''):
     print(scores["scores"])
     for key in scores["scores"]:
         print(scores["scores"][key])
-        df = pd.DataFrame.from_dict(scores[key])
+        df = pd.DataFrame.from_dict(scores["scores"][key])
         df.head()
-        df.to_csv(join(path, prefix, key + "_.csv"))
+        df.to_csv(join(path, prefix, key + ".csv"))

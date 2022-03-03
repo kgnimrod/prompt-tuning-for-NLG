@@ -145,6 +145,7 @@ class T5PromptTuning(T5ForConditionalGeneration):
             return super().forward(
                 inputs_embeds=inputs_embeds,
                 decoder_input_ids=decoder_input_ids,
+                decoder_attention_mask=decoder_attention_mask,
                 encoder_outputs=encoder_outputs,
                 use_cache=use_cache,
                 return_dict=return_dict,
