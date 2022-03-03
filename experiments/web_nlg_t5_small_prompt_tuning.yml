@@ -4,8 +4,9 @@ DATASETS:
     DATASET_CONFIG: config/web_nlg_custom.yml
 
 PRE_TRAINED_MODEL: t5-small
-LOAD_MODEL: False
 PROMPT_TUNING: True
+LOAD_MODEL: False
+SAVE_MODEL: True
 
 SAMPLE: False
 SAMPLE_SIZE_TRAIN:

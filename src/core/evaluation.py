@@ -3,7 +3,7 @@ import torch
 from datasets import load_metric
 
 
-def predict(tokenizer, model, loader, dataset):
+def predict(tokenizer, model, loader, is_prompt_tuning=None):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.eval()
     predictions = []
@@ -27,6 +27,11 @@ def predict(tokenizer, model, loader, dataset):
                 "early_stopping": True,
                 "length_penalty": 1.0
             }
+
+            if is_prompt_tuning:
+                args["inputs_embeds"] = model.extend_inputs(ids).to(device)
+                args["attention_mask"] = model.extend_attention_mask(mask).to(device)
+                args["decoder_input_ids"] = ids
 
             raw_prediction = model.generate(**args)
 

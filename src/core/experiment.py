@@ -172,7 +172,7 @@ class Experiment:
     def _predict(self):
         print("start decoding")
         val_loader = DataLoader(dataset=self.inputs["test"], batch_size=8, num_workers=0)
-        self.predictions = predict(self.tokenizer, self.model, val_loader, self.inputs["test"])
+        self.predictions = predict(self.tokenizer, self.model, val_loader, self.config["PROMPT_TUNING"])
         print("finished decoding")
 
     def _evaluate(self):
