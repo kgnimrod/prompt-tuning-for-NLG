@@ -312,7 +312,7 @@ if __name__ == '__main__':
     argParser.add_argument("-H", "--hypothesis", help="hypothesis translation", required=False)
     argParser.add_argument("-lng", "--language", help="evaluated language", default='en')
     argParser.add_argument("-nr", "--num_refs", help="number of references", type=int, default=4)
-    argParser.add_argument("-m", "--metrics", help="evaluation metrics to be computed", default='bleu,meteor,ter,chrf++,bert')
+    argParser.add_argument("-m", "--metrics", help="evaluation metrics to be computed", default='bleu,meteor,ter,chrf++,bert,bleurt')
 
     argParser.add_argument("-nc", "--ncorder", help="chrF metric: character n-gram order (default=6)", type=int, default=6)
     argParser.add_argument("-nw", "--nworder", help="chrF metric: word n-gram order (default=2)", type=int, default=2)
