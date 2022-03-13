@@ -77,9 +77,6 @@ def sample(datasets, sample_size_train, sample_size_eval=None):
             sampled_test, aligned_datasets[key]["test"].shuffle().select([i for i in range(0, sample_size_eval)])
         )
 
-    sampled_train = sampled_train.shuffle()
-    sampled_val = sampled_val.shuffle()
-    sampled_test = sampled_test.shuffle()
     return {'train': sampled_train, 'validation': sampled_val, 'test': sampled_test}
 
 
@@ -92,9 +89,6 @@ def combine(datasets):
         sampled_val = _combine(sampled_val, datasets[key]["validation"])
         sampled_test = _combine(sampled_test, datasets[key]["test"])
 
-    sampled_train = sampled_train.shuffle()
-    sampled_val = sampled_val.shuffle()
-    sampled_test = sampled_test.shuffle()
     return {'train': sampled_train, 'validation': sampled_val, 'test': sampled_test}
 
 

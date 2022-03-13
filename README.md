@@ -43,8 +43,8 @@ We cloned the official evaluation scripts from the respective repositories:
 - Web NLG 2020: https://github.com/WebNLG/GenerationEval
 
 You can find the corresponding README files on how to use these scripts:
-- E2E NLG: [here](official_evaluation/e2e_evaluation/README.md) and 
-- Web NLG: [here](official_evaluation/web_nlg_amr_evaluation/README.md)
+- E2E NLG: [here](notebooks/official_evaluation_scripts/e2e_evaluation/README.md) and 
+- Web NLG: [here](notebooks/official_evaluation_scripts/web_nlg_amr_evaluation/README.md)
 
 After finishing the inference phase, i.e. the output texts are generated and stored in a file 'hypothesis', please store this
 file in the corresponding subdirectory data/<your_challenge>/test/<'fine_tuning_hypothesis' or 'prompt_tuning_hypothesis'>/hypothesis

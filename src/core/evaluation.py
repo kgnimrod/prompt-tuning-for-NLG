@@ -3,9 +3,8 @@ import torch
 from datasets import load_metric
 
 
-def predict(tokenizer, model, loader, is_prompt_tuning=None):
+def predict(tokenizer, model, loader, embeddings=None):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    is_prompt_tuning = False
     model.eval()
     predictions = []
     targets = []
@@ -28,23 +27,14 @@ def predict(tokenizer, model, loader, is_prompt_tuning=None):
                 # "length_penalty": 1.0
             }
 
-            if is_prompt_tuning:
-                args["inputs_embeds"] = model.extend_inputs(ids).to(device)
-                args["attention_mask"] = model.extend_attention_mask(mask).to(device)
+            if embeddings is not None:
+                args["inputs_embeds"] = embeddings.extend_inputs(ids).to(device)
+                args["attention_mask"] = embeddings.extend_attention_mask(mask).to(device)
                 args["decoder_input_ids"] = ids
             else:
                 args["input_ids"] = ids
 
             raw_prediction = model.generate(**args)
-
-            # inputs_embeds=embeds,
-            # max_length=400,
-            # bos_token_id=0,
-            # pad_token_id=0,
-            # eos_token_id=1,
-            # use_cache=True,
-            # attention_mask=model.extend_attention_mask(inputs_test[i]['attention_mask']),
-            # decoder_input_ids=inputs_test[i]['input_ids']
 
             # Decode y_id and prediction #
             prediction = [

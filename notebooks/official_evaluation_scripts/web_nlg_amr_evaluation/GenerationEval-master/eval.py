@@ -321,7 +321,7 @@ if __name__ == '__main__':
     args = argParser.parse_args()
 
     logging.info('READING INPUTS...')
-    refs_path = '../../../data/amr/test/reference'
+    refs_path = '../../../notebooks/data/amr/test/reference'
     hyps_path = '../../../data/amr/test/prompt_tuning_hypothesis/hypothesis'
 
     lng = args.language

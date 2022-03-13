@@ -8,7 +8,7 @@ from transformers import T5Tokenizer, T5ForConditionalGeneration, TrainingArgume
 
 import src.core.pre_process as pre_process
 from src.core.evaluation import predict, compute_scores
-from src.core.t5_promt_tuning import T5PromptTuningLM
+from src.core.t5_promt_tuning import T5PromptTuningLM, T5PromptTuningEmbeddings
 from src.core.config import load_config_from_yaml
 from src.core.persistance import load_model, save_state_dict, validate_path, save_predictions, \
     load_state_dict, save_scores
@@ -169,8 +169,16 @@ class Experiment:
 
     def _predict(self):
         print("start decoding")
+        embeddings = None
+        model = self.model
+        if self.config["PROMPT_TUNING"]:
+            embeddings = T5PromptTuningEmbeddings(self.model)
+            model = self.model = T5ForConditionalGeneration.from_pretrained(
+                self.config["PRE_TRAINED_MODEL"]
+            )
+
         val_loader = DataLoader(dataset=self.inputs["test"], batch_size=8, num_workers=0)
-        self.predictions = predict(self.tokenizer, self.model, val_loader, self.config["PROMPT_TUNING"])
+        self.predictions = predict(self.tokenizer, model, val_loader, embeddings)
         print("finished decoding")
 
     def _evaluate(self):

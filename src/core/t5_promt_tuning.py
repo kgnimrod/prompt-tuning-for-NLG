@@ -58,8 +58,10 @@ class T5PromptTuning(T5ForConditionalGeneration):
         return self.soft_prompt
 
     # this method appends the learned prompt embeddings to the input ids of the input before forward pass is calculated
-    def extend_inputs(self, input_ids):
+    def _cat_learned_embedding_to_inp(self, input_ids):
+        # print("in t5_prompt_tuning" + str(input_ids.to_device()))
         inputs_embeds = self.get_input_embeddings()(input_ids)
+        #         inputs_embeds = self.transformer.wte(input_ids)
 
         if len(list(inputs_embeds.shape)) == 2:
             inputs_embeds = inputs_embeds.unsqueeze(0)
@@ -123,7 +125,9 @@ class T5PromptTuning(T5ForConditionalGeneration):
             to_encoder_only=False,
     ):
         if input_ids is not None:
-            inputs_embeds = self.extend_inputs(input_ids).to(self.device)
+            inputs_embeds = self._cat_learned_embedding_to_inp(input_ids).to(self.device)
+            # if decoder_input_ids is not None:
+            #     decoder_input_ids = self.embed_tokens(decoder_input_ids).to(self.device)
 
         if labels is not None:
             labels = self.extend_labels(labels).to(self.device)
@@ -145,7 +149,6 @@ class T5PromptTuning(T5ForConditionalGeneration):
             return super().forward(
                 inputs_embeds=inputs_embeds,
                 decoder_input_ids=decoder_input_ids,
-                decoder_attention_mask=decoder_attention_mask,
                 encoder_outputs=encoder_outputs,
                 use_cache=use_cache,
                 return_dict=return_dict,
@@ -157,12 +160,58 @@ class T5PromptTuning(T5ForConditionalGeneration):
             inputs_embeds=inputs_embeds,
             labels=labels,
             decoder_attention_mask=decoder_attention_mask,
-            encoder_outputs=encoder_outputs,
             use_cache=use_cache,
             return_dict=return_dict,
+            encoder_outputs=encoder_outputs,
         )
 
 
 class T5PromptTuningLM(T5PromptTuning, T5ForConditionalGeneration):
     def __init__(self, config):
         super().__init__(config)
+
+
+class T5PromptTuningEmbeddings:
+    def __init__(self, model: T5PromptTuning):
+        self.model = model
+
+    def extent_inputs(self, input_ids):
+        # print("in t5_prompt_tuning" + str(input_ids.to_device()))
+        inputs_embeds = self.model.get_input_embeddings()(input_ids)
+        #         inputs_embeds = self.transformer.wte(input_ids)
+
+        if len(list(inputs_embeds.shape)) == 2:
+            inputs_embeds = inputs_embeds.unsqueeze(0)
+
+        # [batch_size, n_tokens, n_embd]
+        learned_embeds = self.model.get_soft_prompt().weight.repeat(inputs_embeds.size(0), 1, 1)
+        inputs_embeds = torch.cat([learned_embeds, inputs_embeds], dim=1)
+
+        return inputs_embeds
+
+    # to make sure that padding token ids of the labels are not taken into account by the loss function
+    # this method extends the label's tensor by elements that are ignored by the CrossEntropyLoss function
+    # this can be done using the ignore_index value -100
+    def extend_labels(self, labels, ignore_index=-100):
+        if len(list(labels.shape)) == 1:
+            labels = labels.unsqueeze(0)
+        number_of_batches = labels.shape[0]
+
+        return torch.cat(
+            [torch.full((number_of_batches, self.model.number_tokens), ignore_index).to(self.model.device), labels],
+            dim=1
+        )
+
+    def extend_attention_mask(self, attention_mask):
+        # prepend a new dimension (1) to the shape of attention_mask in case it is one dimensional
+        if len(list(attention_mask.shape)) == 1:
+            attention_mask = attention_mask.unsqueeze(0)
+
+        # get the number of batches
+        number_of_batches = attention_mask.shape[0]
+
+        # return a new tensor of shape [number_of_batches, number_tokens+attention_mask] that is filled with the ones
+        return torch.cat(
+            [torch.full((number_of_batches, self.model.number_tokens), 1).to(self.model.device), attention_mask],
+            dim=1
+        )
