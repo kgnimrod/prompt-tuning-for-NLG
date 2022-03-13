@@ -124,11 +124,6 @@ class Experiment:
             if self.config['TRAIN']:
                 self.model = load_model(self.config["INPUT_DIR"])
             else:
-                self.model = T5PromptTuning2.from_pretrained(
-                    self.config["PRE_TRAINED_MODEL"],
-                    number_tokens=self.number_prompt_tokens,
-                    initialize_from_vocab=self.init_from_vocab
-                )
                 load_state_dict(self.model, self.config["INPUT_DIR"], self.config["INPUT_FILE"])
 
     def _prepare_inputs(self, dataset):
