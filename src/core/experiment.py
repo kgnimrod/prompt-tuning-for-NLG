@@ -2,7 +2,7 @@ from datetime import datetime
 from os.path import join
 
 from torch.utils.data import DataLoader
-import wandb
+# import wandb
 
 from transformers import T5Tokenizer, T5ForConditionalGeneration, TrainingArguments, Trainer, IntervalStrategy
 
@@ -44,9 +44,9 @@ class Experiment:
         self.scores = None
         self.inputs = {}
 
-        if "wandb" == self.config["REPORT_TO"]:
-            wandb_config = load_config_from_yaml(self.config["WANDB_CONFIG"])
-            wandb.init(project=wandb_config["WANDB_PROJECT"], entity=wandb_config["WANDB_ENTITY"])
+        # if "wandb" == self.config["REPORT_TO"]:
+        #     wandb_config = load_config_from_yaml(self.config["WANDB_CONFIG"])
+        #     wandb.init(project=wandb_config["WANDB_PROJECT"], entity=wandb_config["WANDB_ENTITY"])
         self.trainer_args = self._load_trainer_args()
 
     def run(self):
