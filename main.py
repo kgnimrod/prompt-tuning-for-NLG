@@ -1,8 +1,8 @@
 from os.path import join
 import argparse
 
-from src.core.experiment import Experiment
-from src.core.config import load_config_from_yaml
+from src_cluster.core.experiment import Experiment
+from src_cluster.core.config import load_config_from_yaml
 
 
 def __main__():

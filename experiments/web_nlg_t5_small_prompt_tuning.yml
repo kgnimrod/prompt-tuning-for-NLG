@@ -37,5 +37,5 @@ SAVE_TOTAL_LIMIT: 3
 WANDB_RUN_NAME: web_nlg_t5_small_prompt_tuning
 
 OUTPUT_DIR: web_nlg_t5_small_prompt_tuning
-INPUT_DIR:
+INPUT_DIR: runs/2022_03_13_12_42_58_web_nlg_t5_small_prompt_tuning/models
 WANDB_CONFIG: config/wandb.yml

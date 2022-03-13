@@ -1,6 +1,6 @@
 import unittest
 from os.path import join
-from src.core.config import load_config_from_yaml
+from src_cluster.core.config import load_config_from_yaml
 
 
 class LoadConfigFromYamlTestCase(unittest.TestCase):
