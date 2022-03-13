@@ -110,7 +110,7 @@ class Experiment:
 
     def _load_model(self):
         if self.config["PROMPT_TUNING"]:
-            self.model = T5PromptTuning2.from_pretrained(
+            self.model = T5PromptTuningLM.from_pretrained(
                 self.config["PRE_TRAINED_MODEL"],
                 number_tokens=self.number_prompt_tokens,
                 initialize_from_vocab=self.init_from_vocab

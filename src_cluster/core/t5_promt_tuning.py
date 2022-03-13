@@ -5,11 +5,11 @@ import torch
 class T5PromptTuning(T5ForConditionalGeneration):
     def __init__(self, config):
         super().__init__(config)
-        self.number_tokens = None
-        self.soft_prompt = None
-        self.config = config
-        self.model_dim = config.d_model
-        self.shared = torch.nn.Embedding(config.vocab_size, config.d_model)
+        # self.number_tokens = None
+        # self.soft_prompt = None
+        # self.config = config
+        # self.model_dim = config.d_model
+        # self.shared = torch.nn.Embedding(config.vocab_size, config.d_model)
 
     @classmethod
     def from_pretrained(cls, model_name_or_path: str, soft_prompt_path: str = None, number_tokens: int = None,
