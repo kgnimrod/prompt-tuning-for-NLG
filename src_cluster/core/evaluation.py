@@ -30,7 +30,7 @@ def predict(tokenizer, model, loader, embeddings=None):
             if embeddings is not None:
                 args["inputs_embeds"] = embeddings.extend_inputs(ids).to(device)
                 args["attention_mask"] = embeddings.extend_attention_mask(mask).to(device)
-                args["decoder_input_ids"] = embeddings.extend_inputs(ids).to(device)
+                # args["decoder_input_ids"] = embeddings.extend_inputs(ids).to(device)
             else:
                 args["input_ids"] = ids
 
