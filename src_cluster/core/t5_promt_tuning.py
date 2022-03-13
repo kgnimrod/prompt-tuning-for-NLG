@@ -279,6 +279,6 @@ class T5PromptTuning2(T5ForConditionalGeneration):
         torch.save(self.soft_prompt, f'soft_prompts/soft_prompt_{challenge_name}_t5_{model_size}_{epochs}_epochs_{number_tokens}_tokens.model')
 
 
-class T5PromptTuningLM(T5PromptTuning2, T5ForConditionalGeneration):
+class T5PromptTuningLM(T5PromptTuning, T5ForConditionalGeneration):
     def __init__(self, config):
         super().__init__(config)
