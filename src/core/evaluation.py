@@ -30,6 +30,7 @@ def predict(tokenizer, model, loader, embeddings=None):
             if embeddings is not None:
                 args["inputs_embeds"] = embeddings.extend_inputs(ids).to(device)
                 args["attention_mask"] = embeddings.extend_attention_mask(mask).to(device)
+                args["decoder_inputs_embeds"] = embeddings.extend_inputs(ids).to(device)
             else:
                 args["input_ids"] = ids
 
@@ -38,10 +39,10 @@ def predict(tokenizer, model, loader, embeddings=None):
             # Decode y_id and prediction #
             prediction = [
                 tokenizer.decode(
-                    p, skip_special_tokens=True
+                    p, skip_special_tokens=True, clean_up_tokenization_spaces=False
                 ) for p in raw_prediction
             ]
-            target = [tokenizer.decode(t, skip_special_tokens=True) for t in y_id]
+            target = [tokenizer.decode(t, skip_special_tokens=True, clean_up_tokenization_spaces=False) for t in y_id]
 
             print(prediction)
             print(target)
