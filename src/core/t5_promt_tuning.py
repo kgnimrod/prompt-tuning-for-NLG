@@ -59,18 +59,14 @@ class T5PromptTuning(T5ForConditionalGeneration):
 
     # this method appends the learned prompt embeddings to the input ids of the input before forward pass is calculated
     def _cat_learned_embedding_to_inp(self, input_ids):
-        # print("in t5_prompt_tuning" + str(input_ids.to_device()))
-        inputs_embeds = self.get_input_embeddings()(input_ids)
-        #         inputs_embeds = self.transformer.wte(input_ids)
+        inputs_embeds = self.shared(input_ids)
 
         if len(list(inputs_embeds.shape)) == 2:
             inputs_embeds = inputs_embeds.unsqueeze(0)
 
         # [batch_size, n_tokens, n_embd]
         learned_embeds = self.soft_prompt.weight.repeat(inputs_embeds.size(0), 1, 1)
-        inputs_embeds = torch.cat([learned_embeds, inputs_embeds], dim=1)
-
-        return inputs_embeds
+        return torch.cat([learned_embeds, inputs_embeds], dim=1)
 
     # to make sure that padding token ids of the labels are not taken into account by the loss function
     # this method extends the label's tensor by elements that are ignored by the CrossEntropyLoss function
@@ -167,7 +163,7 @@ class T5PromptTuningEmbeddings:
 
     def extend_inputs(self, input_ids):
         # print("in t5_prompt_tuning" + str(input_ids.to_device()))
-        inputs_embeds = self.model.get_input_embeddings()(input_ids)
+        inputs_embeds = self.model.shared(input_ids)
         #         inputs_embeds = self.transformer.wte(input_ids)
 
         if len(list(inputs_embeds.shape)) == 2:
