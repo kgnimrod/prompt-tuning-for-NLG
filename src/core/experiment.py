@@ -173,13 +173,9 @@ class Experiment:
         model = self.model
         if self.config["PROMPT_TUNING"]:
             embeddings = T5PromptTuningEmbeddings(self.model)
-            model = self.model
-            # model = self.model = T5ForConditionalGeneration.from_pretrained(
-            #     self.config["PRE_TRAINED_MODEL"]
-            # )
 
-        # val_loader = DataLoader(dataset=self.inputs["test"], batch_size=8, num_workers=0)
-        self.predictions = predict(self.tokenizer, model, self.inputs["test"], embeddings)
+        val_loader = DataLoader(dataset=self.inputs["test"], batch_size=self.config["BATCH_SIZE"])
+        self.predictions = predict(self.tokenizer, model, val_loader, embeddings)
         print("finished decoding")
 
     def _evaluate(self):

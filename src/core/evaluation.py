@@ -1,18 +1,16 @@
-from itertools import chain
-
 import numpy as np
 import torch
 from datasets import load_metric
 
 
-def predict(tokenizer, model, data, embeddings=None):
+def predict(tokenizer, model, loader, embeddings=None):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.eval()
     predictions = []
     targets = []
     with torch.no_grad():
-        for i in range(len(data)):
-
+        model.to(device)
+        for step, data in enumerate(loader, 0):
             ids = data['input_ids'].to(device)
             mask = data['attention_mask'].to(device)
             y_id = data['labels'].to(device)
@@ -37,15 +35,19 @@ def predict(tokenizer, model, data, embeddings=None):
                 args["input_ids"] = ids
 
             raw_prediction = model.generate(**args)
-            output = tokenizer.batch_decode(raw_prediction)
-            print(output)
-            predictions.append([x.replace('<pad>','').replace('</s>','').strip() for x in output])
 
+            # Decode y_id and prediction #
+            prediction = [
+                tokenizer.decode(
+                    p, skip_special_tokens=True, clean_up_tokenization_spaces=False
+                ) for p in raw_prediction
+            ]
             target = [tokenizer.decode(t, skip_special_tokens=True, clean_up_tokenization_spaces=False) for t in y_id]
+
+            print(prediction)
+            print(target)
+            predictions.extend(prediction)
             targets.extend(target)
-
-    predictions = list(chain(*predictions))
-
     return {"predictions": predictions, "targets": targets}
 
 
