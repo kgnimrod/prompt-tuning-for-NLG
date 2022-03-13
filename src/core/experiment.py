@@ -178,8 +178,8 @@ class Experiment:
             #     self.config["PRE_TRAINED_MODEL"]
             # )
 
-        val_loader = DataLoader(dataset=self.inputs["test"], batch_size=8, num_workers=0)
-        self.predictions = predict(self.tokenizer, model, val_loader, embeddings)
+        # val_loader = DataLoader(dataset=self.inputs["test"], batch_size=8, num_workers=0)
+        self.predictions = predict(self.tokenizer, model, self.inputs["test"], embeddings)
         print("finished decoding")
 
     def _evaluate(self):
