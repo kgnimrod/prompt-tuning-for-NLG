@@ -70,14 +70,9 @@ def save_predictions(predictions, path, filename="predictions.csv"):
 def save_scores(scores, path, prefix=''):
     path = validate_path(path)
 
-    print(scores["means"])
     df = pd.DataFrame.from_dict(scores["means"])
-    df.head()
     df.to_csv(join(path, prefix, "means.csv"))
 
-    print(scores["scores"])
     for key in scores["scores"]:
-        print(scores["scores"][key])
         df = pd.DataFrame.from_dict(scores["scores"][key])
-        df.head()
         df.to_csv(join(path, prefix, key + ".csv"))

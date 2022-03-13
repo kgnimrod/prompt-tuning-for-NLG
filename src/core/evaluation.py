@@ -107,7 +107,6 @@ def _compute_bleurt(predictions, targets):
 
 def _compute_rouge_l(predictions, targets):
     scores = compute_score(predictions=predictions, labels=targets, name="rouge")
-    print(scores)
     mean = {
         "f1": np.mean(np.array(scores["rougeL"].mid.fmeasure))
     }
